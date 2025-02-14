@@ -1,12 +1,6 @@
 import sys
 from dotenv import load_dotenv
 import os
-import json
-load_dotenv()
-base_dir = os.getenv('PEOPLESOFT_ETL_BASE_DIR')
-sys.path.append(base_dir)
-import src.utils as utils
-from src.oracle_db import OracleDB
 import aiohttp
 import asyncio
 import time
@@ -16,9 +10,6 @@ from aiohttp_retry import RetryClient, FibonacciRetry
 from types import SimpleNamespace
 import logging
 import yaml
-import sys
-from dotenv import load_dotenv
-import os
 load_dotenv()
 base_dir = os.getenv('PEOPLESOFT_ETL_BASE_DIR')
 sys.path.append(base_dir)
