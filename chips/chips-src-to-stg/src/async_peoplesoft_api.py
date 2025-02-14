@@ -173,9 +173,14 @@ class AsyncPeopleSoftAPI:
             response_offset = None
             response_count = None
             response_links = None
-        except aiohttp.client_exceptions.ClientPayloadError as e:
+        except (
+            Exception,
+            aiohttp.client_exceptions.ClientPayloadError, 
+            asyncio.exceptions.CancelledError, 
+            asyncio.TimeoutError,
+        ) as e:
             # response didn't return data
-            logger.info(f'ClientPayloadError ({e}) raised when trying to log response data for params={request_params}; request was logged with error status code so it should be retried at end of job')
+            logger.info(f'{e} raised when trying to log response data for params={request_params}; request was logged with error status code so it should be retried at end of job')
             response_status = 400
             response_hasMore = None
             response_limit = None
@@ -248,6 +253,17 @@ class AsyncPeopleSoftAPI:
         Returns:
             dict: The response data parsed as JSON.
         """
+        # response = await self.get(session, endpoint, params)
+        # attempt = 1
+        # while attempt <= 10:
+        #     try:
+        #         data = await response.json(content_type=None)
+        #         break
+        #     except aiohttp.client_exceptions.ClientPayloadError as e:
+        #         logger.info(f'(attempt {attempt}) raised {e} when trying to get json response from {endpoint} with params={params}')
+        #         attempt += 1
+        #         asyncio.sleep(1)
+
         response = await self.get(session, endpoint, params)
         data = await response.json(content_type=None)
         return data
