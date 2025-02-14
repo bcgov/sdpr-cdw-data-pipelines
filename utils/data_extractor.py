@@ -139,8 +139,8 @@ class DataExtractor:
         Args:
             persistent (yes/no): wheather the drive persists. 'yes' by default.
         """
-        cmd = fr'net use {drive} {dir} /user:{username} {password} persistent:{persistent}'
-        logger.debug(fr'net use {drive} {dir} /user:{username} [password]')
+        cmd = fr'net use {drive} {dir} /user:{username} {password} /persistent:{persistent}'
+        logger.debug(fr'net use {drive} {dir} /user:{username} [password] /persistent:{persistent}')
         subprocess.call(cmd, shell=True)
 
     def delete_drive(self, drive):
@@ -150,5 +150,3 @@ class DataExtractor:
         cmd = fr'net use {drive} /del'
         logger.debug(cmd)
         subprocess.call(cmd, shell=True)
-
-        
