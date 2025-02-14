@@ -139,7 +139,7 @@ class DataExtractor:
         Args:
             persistent (yes/no): wheather the drive persists. 'yes' by default.
         """
-        cmd = fr'net use {drive} {dir} /user:{username} {password} persistent:{persistent}'
+        cmd = fr'net use {drive} {dir} /user:{username} {password} /persistent:{persistent}'
         logger.debug(fr'net use {drive} {dir} /user:{username} [password]')
         subprocess.call(cmd, shell=True)
 
