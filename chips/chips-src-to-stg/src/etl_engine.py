@@ -7,6 +7,7 @@ import oracledb
 import warnings
 import pandas as pd
 import numpy as np
+import polars as pl
 import asyncio
 import aiohttp
 import datetime as dt
@@ -25,6 +26,7 @@ logger = logging.getLogger('__main__.' + __name__)
 # Display entire DataFrame when printing
 pd.set_option("display.max_columns", None)
 pd.set_option("display.max_rows", 100)
+pl.Config.set_tbl_rows(100)
 
 # Warning Suppressions
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -117,7 +119,7 @@ class ETLEngine:
             self.data_model_consistencies = utils.data_model_consistencies(self.data_model_mapping)
 
             # transform the extracted data
-            consistent_col_names_src = self.data_model_consistencies["col_name_src"].tolist()
+            consistent_col_names_src = self.data_model_consistencies["col_name_src"].to_list()
             transformed_data = extracted_data[consistent_col_names_src]
             transformed_data = utils.apply_data_type_transformations(
                 self.data_model_consistencies, transformed_data
@@ -125,10 +127,10 @@ class ETLEngine:
 
             # update the column names for the transformed data from the endpoint field names to the
             # target table names
-            consistent_col_names_target = self.data_model_consistencies["col_name_target"].tolist()
+            consistent_col_names_target = self.data_model_consistencies["col_name_target"].to_list()
             transformed_data.columns = consistent_col_names_target
 
-            transformed_data = transformed_data.replace({np.nan: None})
+            transformed_data = pl.DataFrame(transformed_data, nan_to_null=True)
 
             self.transformed_data = transformed_data
 
@@ -154,7 +156,7 @@ class ETLEngine:
         table_owner=self.oracle_table_owner
         table_name=self.oracle_table_name
         cols_to_load_list=transformed_data.columns
-        writeRows=list(transformed_data.itertuples(index=False, name=None))
+        writeRows=list(transformed_data.iter_rows())
         
         if truncate_first:
             self.oracledb.truncate(table_owner, table_name)
@@ -162,6 +164,9 @@ class ETLEngine:
         row_params = [
             dict(zip(cols_to_load_list, list(row_vals_tuple))) for row_vals_tuple in writeRows
         ]
+
+        logger.info(row_params[0])
+        logger.info(transformed_data.schema)
 
         try:
             self.oracledb.insert_many(
@@ -282,7 +287,19 @@ class ETLEngine:
         logger.info(f"started {endpoint} {params} | tasks running: {self.worker.running_task_count}")
 
         items = await self.api.get_items(session, endpoint, params)
-        extracted_data = pd.DataFrame(items)
+
+        def int_to_float(val):
+            if isinstance(val, int):
+                return float(val)
+            return val
+
+        # set all ints to floats in the first row since it will be used to set the 
+        # datatypes of columns in the dataframe. Hence, a column that has both
+        # int and float values will see its floats converted to ints if this
+        # method isn't used
+        items[0] = {k: int_to_float(v) for k, v in items[0].items()}
+
+        extracted_data = pl.DataFrame(items)
         transformed_data = self.transform(extracted_data=extracted_data)
         self.load(transformed_data=transformed_data, truncate_first=False)
 

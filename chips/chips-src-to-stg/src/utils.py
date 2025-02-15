@@ -1,5 +1,6 @@
 from datetime import datetime
 import pandas as pd
+import polars as pl
 import math
 import copy
 
@@ -143,6 +144,35 @@ def transform_data_type(value, oracle_data_type: str, nullable: str):
         value = str_to_datetime(value)
     return value
 
+def cast_col_as(oracle_data_type: str):
+    """
+    Transform the input value to the corresponding Python type based on the Oracle data type.
+
+    This function takes a value and casts it to the appropriate Python type 
+    that fits the Oracle data model. It also considers whether the value 
+    is nullable based on the nullable indicator provided.
+
+    Args:
+        value: The input value to be transformed.
+        oracle_data_type (str): The Oracle data type, such as "VARCHAR2", 
+                                "NUMBER", "DATE", etc.
+
+    Returns:
+        The value casted to the appropriate Python type based on the Oracle 
+        data type. If the column is not nullable and the value is None, 
+        an empty string is returned.
+
+    Notes:
+        - This function assumes that `str_to_float` 
+          and `str_to_datetime` are defined elsewhere.
+    """
+    if oracle_data_type in ("VARCHAR2", "CHAR", "CLOB"):
+        return pl.Object
+    elif oracle_data_type == "NUMBER":
+        return pl.Float64
+    elif oracle_data_type in ("DATE", "TIMESTAMP", "TIMESTAMP(6)"):
+        return pl.Datetime
+
 
 def apply_data_type_transformations(
     data_model_mapping: pd.DataFrame, df: pd.DataFrame
@@ -171,12 +201,18 @@ def apply_data_type_transformations(
         - This function assumes that the `transform_data_type` function is 
           defined elsewhere.
     """
-    for index, row in data_model_mapping.iterrows():
+    for row in data_model_mapping.iter_rows(named=True):
         col_name = row["col_name_src"]
         oracle_data_type = row["data_type_target"]
         nullable = row["nullable_target"]
-        df[col_name] = df[col_name].apply(
-            lambda val: transform_data_type(val, oracle_data_type, nullable)
+        col_dtype = cast_col_as(oracle_data_type)
+        df = df.with_columns(  
+            pl.col(col_name)
+            .map_elements(
+                lambda val: transform_data_type(val, oracle_data_type, nullable), 
+                return_dtype=col_dtype
+            )
+            .cast(col_dtype, strict=False)
         )
     return df
 
@@ -202,9 +238,8 @@ def source_data_model(source_data: pd.DataFrame) -> pd.DataFrame:
         - The resulting DataFrame can be used for mapping and transforming 
           data types when integrating with other data models.
     """
-    model = pd.DataFrame(source_data.dtypes)
-    model = model.reset_index()
-    model.columns = ["col_name_src", "data_type_src"]
+    schema = {"col_name_src": source_data.columns, "data_type_src": source_data.dtypes}
+    model = pl.from_dict(schema)
     return model
 
 
@@ -235,12 +270,13 @@ def target_data_model(owner: str, table_name: str, db) -> pd.DataFrame:
           method that executes the provided SQL query and returns the result 
           as a pandas DataFrame.
     """
-    df = db.query_to_df(f"""
+    pd_df = db.query_to_df(f"""
         select COLUMN_NAME, DATA_TYPE, DATA_LENGTH, NULLABLE
         from sys.dba_tab_columns
         where owner = '{owner}'
           and table_name = '{table_name}'
     """)
+    df = pl.DataFrame(pd_df)
     df.columns = [
         "col_name_target",
         "data_type_target",
@@ -279,14 +315,18 @@ def data_model_mapping(
         - The function performs an outer merge to include all columns from both 
           models, even if there is no direct match.
     """
-    source_data_model["upper_col_name_src"] = source_data_model["col_name_src"].str.upper()
-    mapping_df = source_data_model.merge(
+    source_data_model = source_data_model.with_columns(
+        pl.col("col_name_src")
+        .str.to_uppercase()
+        .alias("upper_col_name_src")
+    )
+    mapping_df = source_data_model.join(
         target_data_model,
         how="outer",
         left_on="upper_col_name_src",
         right_on="col_name_target",
     )
-    mapping_df = mapping_df[
+    mapping_df = mapping_df.select(
         [
             "col_name_src",
             "col_name_target",
@@ -295,7 +335,7 @@ def data_model_mapping(
             "data_length_target",
             "nullable_target",
         ]
-    ]
+    )
     return mapping_df
 
 
@@ -319,9 +359,10 @@ def data_model_discrepancies(data_model_mapping: pd.DataFrame) -> pd.DataFrame:
         - Discrepancies indicate columns that do not have a corresponding match 
           in the other data model.
     """
-    df = data_model_mapping[
-        data_model_mapping["col_name_src"].isna() | data_model_mapping["col_name_target"].isna()
-    ]
+    df = data_model_mapping.filter(
+        (pl.col("col_name_src").is_null()) 
+        | (pl.col("col_name_target").is_null())
+    )
     return df
 
 
@@ -345,11 +386,10 @@ def data_model_consistencies(data_model_mapping: pd.DataFrame) -> pd.DataFrame:
         - Consistencies indicate columns that have a corresponding match 
           in both data models, allowing for further validation or processing.
     """
-    df = data_model_mapping[
-        data_model_mapping["col_name_src"].notnull() &
-        data_model_mapping["col_name_target"].notnull()
-    ]
-    df = df.reset_index(drop=True)
+    df = data_model_mapping.filter(
+        (pl.col("col_name_src").is_not_null()) 
+        & (pl.col("col_name_target").is_not_null())
+    )
     return df
 
 
