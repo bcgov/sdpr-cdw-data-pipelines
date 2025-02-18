@@ -65,24 +65,27 @@ class ETLEngine:
         self.worker = worker
         self.cache = cache
 
-    def extract(self, limit: int = 10000, offsets: list[int] = None) -> pd.DataFrame:
+    async def extract(
+        self, session: aiohttp.ClientSession, endpoint: str, params: dict
+        ) -> pl.DataFrame:
         """
         Gets data from the API and returns it in a DataFrame.
 
         Args:
-            limit (int, optional): The maximum number of records to retrieve. Defaults to 10000.
-            offsets (list[int], optional): List of offsets for pagination. Defaults to None.
+            session (aiohttp.ClientSession): The aiohttp session.
+            endpoint (str): The API endpoint.
+            params (dict): The request parameters.
 
         Returns:
-            pd.DataFrame: A DataFrame containing the extracted data.
+            pl.DataFrame: A DataFrame containing the extracted data.
 
         Raises:
             ExtractException: If an error occurs during extraction.
         """
         try:
-            src_records = asyncio.run(self.api.get_items_concurrently(self.api_endpoint))
-            self.extracted_data = pd.DataFrame(src_records)
-            return self.extracted_data
+            items = await self.api.get_items(session, endpoint, params)
+            data = pl.DataFrame(items, infer_schema_length=None)
+            return data
         except Exception as e:
             raise ExtractException(e)
 
@@ -286,20 +289,7 @@ class ETLEngine:
         """
         logger.info(f"started {endpoint} {params} | tasks running: {self.worker.running_task_count}")
 
-        items = await self.api.get_items(session, endpoint, params)
-
-        def int_to_float(val):
-            if isinstance(val, int):
-                return float(val)
-            return val
-
-        # set all ints to floats in the first row since it will be used to set the 
-        # datatypes of columns in the dataframe. Hence, a column that has both
-        # int and float values will see its floats converted to ints if this
-        # method isn't used
-        items[0] = {k: int_to_float(v) for k, v in items[0].items()}
-
-        extracted_data = pl.DataFrame(items)
+        extracted_data = await self.extract(session, endpoint, params)
         transformed_data = self.transform(extracted_data=extracted_data)
         self.load(transformed_data=transformed_data, truncate_first=False)
 
