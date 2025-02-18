@@ -501,7 +501,6 @@ def build_tables(
             )
 
         except Exception:
-            print(traceback.format_exc())
             build_end = dt.datetime.now()
             try:
                 records_at_endpoint = non_async_api.get_record_count(endpoint) # num recs after ETL
