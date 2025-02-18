@@ -42,7 +42,6 @@ class OracleDB:
             self.connect_w_win_reg(conn_str_key_endpoint=conn_str_key_endpoint)
         else:
             msg = 'Since conn_str_key_endpoint is None, use the connect function to connect to the DB.'
-            print(msg)
             logger.debug(msg)
 
     def connect_w_win_reg(self, conn_str_key_endpoint: str) -> None:
@@ -391,7 +390,6 @@ class OracleDB:
             when not matched then insert ({self._list_of_cols_to_tgt_cols_str(cols_to_merge_list)}) 
                 values {self._bind_vars_str(cols_to_merge_list)}
         """
-        print(statement)
         self.execute_many(statement=statement, parameters=parameters)
         self.commit()
 
