@@ -4,9 +4,6 @@ from src.async_peoplesoft_api import AsyncPeopleSoftAPI
 from src.async_worker import AsyncWorker
 from src.primary_keys import PrimaryKeys
 import oracledb
-import warnings
-import pandas as pd
-import numpy as np
 import polars as pl
 import asyncio
 import aiohttp
@@ -23,14 +20,7 @@ from utils.oracle_db import OracleDB
 
 logger = logging.getLogger('__main__.' + __name__)
 
-# Display entire DataFrame when printing
-pd.set_option("display.max_columns", None)
-pd.set_option("display.max_rows", 100)
 pl.Config.set_tbl_rows(100)
-
-# Warning Suppressions
-pd.options.mode.chained_assignment = None  # default='warn'
-warnings.simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 
 
 class ETLEngine:
@@ -89,15 +79,15 @@ class ETLEngine:
         except Exception as e:
             raise ExtractException(e)
 
-    def transform(self, extracted_data: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, extracted_data: pl.DataFrame) -> pl.DataFrame:
         """
         Transforms the extracted data.
 
         Args:
-            extracted_data (pd.DataFrame): The extracted data.
+            extracted_data (pl.DataFrame): The extracted data.
 
         Returns:
-            pd.DataFrame: The transformed data.
+            pl.DataFrame: The transformed data.
 
         Raises:
             TransformException: If an error occurs during transformation.
@@ -145,12 +135,12 @@ class ETLEngine:
         except Exception as e:
             raise TransformException(e)
 
-    def load(self, transformed_data: pd.DataFrame, truncate_first: bool = True) -> None:
+    def load(self, transformed_data: pl.DataFrame, truncate_first: bool = True) -> None:
         """
         Loads data into the database.
 
         Args:
-            transformed_data (pd.DataFrame): The transformed data to be loaded into the database.
+            transformed_data (pl.DataFrame): The transformed data to be loaded into the database.
             truncate_first (bool, optional): If True, truncates the table before loading. Defaults to True.
 
         Raises:
@@ -167,9 +157,6 @@ class ETLEngine:
         row_params = [
             dict(zip(cols_to_load_list, list(row_vals_tuple))) for row_vals_tuple in writeRows
         ]
-
-        logger.info(row_params[0])
-        logger.info(transformed_data.schema)
 
         try:
             self.oracledb.insert_many(
