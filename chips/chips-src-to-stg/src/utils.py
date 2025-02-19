@@ -1,5 +1,4 @@
 from datetime import datetime
-import pandas as pd
 import polars as pl
 import math
 import copy
@@ -175,8 +174,8 @@ def cast_col_as(oracle_data_type: str):
 
 
 def apply_data_type_transformations(
-    data_model_mapping: pd.DataFrame, df: pd.DataFrame
-) -> pd.DataFrame:
+    data_model_mapping: pl.DataFrame, df: pl.DataFrame
+    ) -> pl.DataFrame:
     """
     Apply data type transformations to a DataFrame based on a mapping.
 
@@ -186,15 +185,15 @@ def apply_data_type_transformations(
     and nullable indicator.
 
     Args:
-        data_model_mapping (pd.DataFrame): A DataFrame containing the mapping 
+        data_model_mapping (pl.DataFrame): A DataFrame containing the mapping 
                                             of source column names, target data 
                                             types, and nullable indicators.
-        df (pd.DataFrame): A DataFrame containing data from the API that needs 
+        df (pl.DataFrame): A DataFrame containing data from the API that needs 
                            to be transformed to fit the data model for the 
                            target Oracle table.
 
     Returns:
-        pd.DataFrame: The transformed DataFrame with columns adjusted to fit 
+        pl.DataFrame: The transformed DataFrame with columns adjusted to fit 
                        the target Oracle data types.
 
     Notes:
@@ -217,7 +216,7 @@ def apply_data_type_transformations(
     return df
 
 
-def source_data_model(source_data: pd.DataFrame) -> pd.DataFrame:
+def source_data_model(source_data: pl.DataFrame) -> pl.DataFrame:
     """
     Create a data model DataFrame from the source data.
 
@@ -226,11 +225,11 @@ def source_data_model(source_data: pd.DataFrame) -> pd.DataFrame:
     data types.
 
     Args:
-        source_data (pd.DataFrame): The source DataFrame for which the data 
+        source_data (pl.DataFrame): The source DataFrame for which the data 
                                      model is to be created.
 
     Returns:
-        pd.DataFrame: A DataFrame containing two columns: "col_name_src" 
+        pl.DataFrame: A DataFrame containing two columns: "col_name_src" 
                       and "data_type_src", representing the column names 
                       and their respective data types in the source data.
 
@@ -243,7 +242,7 @@ def source_data_model(source_data: pd.DataFrame) -> pd.DataFrame:
     return model
 
 
-def target_data_model(owner: str, table_name: str, db) -> pd.DataFrame:
+def target_data_model(owner: str, table_name: str, db) -> pl.DataFrame:
     """
     Retrieve the data model for a specified Oracle table.
 
@@ -258,7 +257,7 @@ def target_data_model(owner: str, table_name: str, db) -> pd.DataFrame:
             and return results as a DataFrame.
 
     Returns:
-        pd.DataFrame: A DataFrame containing the data model for the specified 
+        pl.DataFrame: A DataFrame containing the data model for the specified 
                       table, with columns:
                       - "col_name_target": The name of the column.
                       - "data_type_target": The data type of the column.
@@ -287,8 +286,8 @@ def target_data_model(owner: str, table_name: str, db) -> pd.DataFrame:
 
 
 def data_model_mapping(
-    source_data_model: pd.DataFrame, target_data_model: pd.DataFrame
-) -> pd.DataFrame:
+    source_data_model: pl.DataFrame, target_data_model: pl.DataFrame
+    ) -> pl.DataFrame:
     """
     Create a mapping DataFrame between source and target data models.
 
@@ -296,13 +295,13 @@ def data_model_mapping(
     by merging them based on their column names. The comparison is case-insensitive.
 
     Args:
-        source_data_model (pd.DataFrame): The source data model returned 
+        source_data_model (pl.DataFrame): The source data model returned 
                                            by the `source_data_model` function.
-        target_data_model (pd.DataFrame): The target data model returned 
+        target_data_model (pl.DataFrame): The target data model returned 
                                            by the `target_data_model` function.
 
     Returns:
-        pd.DataFrame: A DataFrame containing the mapping between source and 
+        pl.DataFrame: A DataFrame containing the mapping between source and 
                       target data models, with the following columns:
                       - "col_name_src": The name of the source column.
                       - "col_name_target": The name of the target column.
@@ -339,7 +338,7 @@ def data_model_mapping(
     return mapping_df
 
 
-def data_model_discrepancies(data_model_mapping: pd.DataFrame) -> pd.DataFrame:
+def data_model_discrepancies(data_model_mapping: pl.DataFrame) -> pl.DataFrame:
     """
     Identify discrepancies in the data model mapping.
 
@@ -348,11 +347,11 @@ def data_model_discrepancies(data_model_mapping: pd.DataFrame) -> pd.DataFrame:
     It returns a DataFrame containing only the discrepancies.
 
     Args:
-        data_model_mapping (pd.DataFrame): The data model mapping DataFrame 
+        data_model_mapping (pl.DataFrame): The data model mapping DataFrame 
                                             returned by the `data_model_mapping` function.
 
     Returns:
-        pd.DataFrame: A DataFrame containing rows where either the source 
+        pl.DataFrame: A DataFrame containing rows where either the source 
                       column or the target column is missing (NaN).
 
     Notes:
@@ -366,7 +365,7 @@ def data_model_discrepancies(data_model_mapping: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def data_model_consistencies(data_model_mapping: pd.DataFrame) -> pd.DataFrame:
+def data_model_consistencies(data_model_mapping: pl.DataFrame) -> pl.DataFrame:
     """
     Identify consistent entries in the data model mapping.
 
@@ -375,11 +374,11 @@ def data_model_consistencies(data_model_mapping: pd.DataFrame) -> pd.DataFrame:
     It returns a DataFrame containing only the consistent entries.
 
     Args:
-        data_model_mapping (pd.DataFrame): The data model mapping DataFrame 
+        data_model_mapping (pl.DataFrame): The data model mapping DataFrame 
                                             returned by the `data_model_mapping` function.
 
     Returns:
-        pd.DataFrame: A DataFrame containing rows where both the source 
+        pl.DataFrame: A DataFrame containing rows where both the source 
                       column and the target column are present (not null).
 
     Notes:
@@ -418,9 +417,10 @@ def is_nan(value) -> bool:
 
 
 def equate_col_names(
-    data_model_mapping: pd.DataFrame, col_name_src: str, col_name_target: str
-) -> pd.DataFrame:
+    data_model_mapping: pl.DataFrame, col_name_src: str, col_name_target: str
+) -> pl.DataFrame:
     """
+    * Function needs to be updated from pandas to polars dfs if needed *
     Reconcile differences in source and target column names in a data model mapping.
 
     This function updates the data model mapping DataFrame to reflect the 
@@ -428,38 +428,39 @@ def equate_col_names(
     their data matches, despite differing names.
 
     Args:
-        data_model_mapping (pd.DataFrame): The data model mapping DataFrame.
+        data_model_mapping (pl.DataFrame): The data model mapping DataFrame.
         col_name_src (str): The source column name.
         col_name_target (str): The target column name.
 
     Returns:
-        pd.DataFrame: The updated data model mapping DataFrame with reconciled 
+        pl.DataFrame: The updated data model mapping DataFrame with reconciled 
                       source and target columns.
 
     Notes:
         - This function modifies the input DataFrame and drops old source 
           field rows that have been merged into the target column row.
     """
-    # get the value of the source data type
-    data_type_src = data_model_mapping.query(f'col_name_src == "{col_name_src}"')[
-        "data_type_src"
-    ].item()
+    # # get the value of the source data type
+    # data_type_src = data_model_mapping.query(f'col_name_src == "{col_name_src}"')[
+    #     "data_type_src"
+    # ].item()
 
-    # create a new data model mapping and merge the associated source and target rows
-    new_dm_mapping = data_model_mapping
-    new_dm_mapping.loc[new_dm_mapping["col_name_target"] == col_name_target, "data_type_src"] = (
-        data_type_src
-    )
-    new_dm_mapping.loc[new_dm_mapping["col_name_target"] == col_name_target, "col_name_src"] = (
-        col_name_src
-    )
+    # # create a new data model mapping and merge the associated source and target rows
+    # new_dm_mapping = data_model_mapping
+    # new_dm_mapping.loc[new_dm_mapping["col_name_target"] == col_name_target, "data_type_src"] = (
+    #     data_type_src
+    # )
+    # new_dm_mapping.loc[new_dm_mapping["col_name_target"] == col_name_target, "col_name_src"] = (
+    #     col_name_src
+    # )
 
-    # drop the old source field row now that it's been merged into the target column row
-    for index, row in new_dm_mapping.iterrows():
-        if is_nan(row["col_name_target"]) and row["col_name_src"] == col_name_src:
-            new_dm_mapping = new_dm_mapping.drop(index)
+    # # drop the old source field row now that it's been merged into the target column row
+    # for index, row in new_dm_mapping.iterrows():
+    #     if is_nan(row["col_name_target"]) and row["col_name_src"] == col_name_src:
+    #         new_dm_mapping = new_dm_mapping.drop(index)
 
-    return new_dm_mapping
+    # return new_dm_mapping
+    pass # if need in future, update the commented code from pandas to polars 
 
 
 def insert_cols_str(cols: list[str]) -> str:
