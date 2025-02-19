@@ -190,7 +190,7 @@ class ETLEngine:
         table_name: str,
         cols_to_merge_list: list[str],
         parameters,
-    ) -> None:
+        ) -> None:
         """
         Merges new records on the primary key defined or all columns if the primary key is undefined.
 
@@ -261,7 +261,7 @@ class ETLEngine:
 
     async def etl_task(
         self, session: aiohttp.ClientSession, endpoint: str, params: dict
-    ) -> None:
+        ) -> None:
         """
         Makes a single GET request to the endpoint and returns only the 'items' in the response,
         then transforms and loads the data into Oracle.
@@ -336,7 +336,7 @@ class ETLEngine:
         endpoint: str, 
         n_records_per_task: int,
         n_requests_per_session: int=500,
-    ) -> None:
+        ) -> None:
         """
         Runs all ETL iterations to load all the data from an endpoint to a table.
         Opens a new session every n_requests_per_session and creates pages based on the total
@@ -381,7 +381,7 @@ class ETLEngine:
         list_of_params: list[dict],
         n_records_per_task: int,
         n_requests_per_session: int=500,
-    ) -> None:
+        ) -> None:
         """
         Runs all ETL iterations to load all the data from an endpoint to a table.
         Opens a new session every n_requests_per_session and processes each set of params.
@@ -422,7 +422,7 @@ class ETLEngine:
         list_of_params: list[dict],
         n_records_per_task: int,
         n_requests_per_session: int=500,
-    ) -> None:
+        ) -> None:
         """
         Requests records for each param in list_of_params and loads the records into the associated
         table in Oracle.

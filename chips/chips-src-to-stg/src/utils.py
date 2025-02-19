@@ -418,7 +418,7 @@ def is_nan(value) -> bool:
 
 def equate_col_names(
     data_model_mapping: pl.DataFrame, col_name_src: str, col_name_target: str
-) -> pl.DataFrame:
+    ) -> pl.DataFrame:
     """
     * Function needs to be updated from pandas to polars dfs if needed *
     Reconcile differences in source and target column names in a data model mapping.

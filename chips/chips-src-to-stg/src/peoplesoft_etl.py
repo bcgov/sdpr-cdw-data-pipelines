@@ -60,7 +60,7 @@ def upsert_table_build_status(
     rows_minus_recs: int,
     duplicates_in_oracle: int,
     last_rerun_of_failed_requests: dt.datetime,
-):
+    ):
     """
     Upserts records into the ETL table build status in Oracle.
 
@@ -188,7 +188,7 @@ async def get_pay_dates_list(etl_engine: ETLEngine) -> list:
 
 async def refresh_last_n_pay_end_dates(
     etl_engine: ETLEngine, last_n_pay_end_dates: int = 2
-) -> None:
+    ) -> None:
     """
     For endpoints that have 'payenddate' as a query parameter and 'PAY_END_DT' as the corresponding 
     column in the Oracle table, this function gets all records for the last_n_pay_end_dates from 
@@ -238,7 +238,7 @@ async def refresh_last_n_pay_end_dates(
 
 async def refresh_entire_pay_date_table(
     etl_engine: ETLEngine
-) -> None:
+    ) -> None:
     """
     For endpoints that have 'payenddate' as a query parameter and 'PAY_END_DT' as the corresponding 
     column in the Oracle table, this function gets all records from the [endpoint]_pay_dates 
@@ -283,7 +283,7 @@ async def refresh_entire_pay_date_table(
 
 async def update_pay_end_dates_in_range(
     etl_engine: ETLEngine, min_date: str, max_date: str
-) -> None:
+    ) -> None:
     """
     For endpoints that have 'payenddate' as a query parameter and 'PAY_END_DT' as the corresponding: 
     - Updates records for pay end dates within a specified date range.
@@ -340,7 +340,7 @@ async def run_etl_worker(
     start_task_sleep_time: float = 1,
     incremental_refresh: bool = True,
     last_n_pay_dates_to_refresh_incrementally: int = None,
-) -> None:
+    ) -> None:
     """
     Runs async ETL tasks using a worker.
 
@@ -387,7 +387,7 @@ def build_tables(
     start_task_sleep_time: int = 1,
     incremental_refresh: bool = True,
     last_n_pay_dates_to_refresh_incrementally: int = None,
-) -> None:
+    ) -> None:
     """
     Builds tables by processing records from specified API endpoints.
 
@@ -559,7 +559,7 @@ def build_tables(
 
 def peoplesoft_etl_engine(
     endpoint: str, table_owner: str, table_name: str, task_count: int, start_task_sleep_time: int
-) -> ETLEngine:
+    ) -> ETLEngine:
     """
     Returns an ETLEngine suitable for ETL of PeopleSoft tables.
 
@@ -599,7 +599,7 @@ def peoplesoft_etl_engine(
 
 def manually_add_records_to_table(
     endpoint: str, params: dict, table_owner: str, table_name: str
-):
+    ):
     """
     Adds records to the specified Oracle table from the given API endpoint.
 

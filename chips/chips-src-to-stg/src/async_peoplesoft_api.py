@@ -97,7 +97,7 @@ class AsyncPeopleSoftAPI:
             session: aiohttp.ClientSession,
             trace_config_ctx: SimpleNamespace,
             params: aiohttp.TraceRequestStartParams,
-        ) -> None:
+            ) -> None:
             current_attempt = trace_config_ctx.trace_request_ctx['current_attempt']
             if current_attempt > 1:
                 logger.info(f'Attempt {current_attempt} for request: {params.url}')
@@ -241,7 +241,7 @@ class AsyncPeopleSoftAPI:
 
     async def get_json(
         self, session: aiohttp.ClientSession, endpoint: str, params: dict = {}
-    ) -> dict:
+        ) -> dict:
         """
         Makes a GET request to the API and returns the response as JSON.
 
@@ -273,7 +273,7 @@ class AsyncPeopleSoftAPI:
         session: aiohttp.ClientSession,
         endpoint: str,
         params: dict={},
-    ) -> dict:
+        ) -> dict:
         """
         Retrieves only the 'items' from the JSON response of a GET request.
 
@@ -323,7 +323,7 @@ class AsyncPeopleSoftAPI:
 
     async def get_offsets(
         self, session: aiohttp.ClientSession, endpoint: str, page_size: int
-    ) -> list[int]:
+        ) -> list[int]:
         """
         Generates a list of offsets for paginated requests to the specified endpoint.
 
