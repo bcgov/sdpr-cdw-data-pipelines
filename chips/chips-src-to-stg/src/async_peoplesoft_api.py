@@ -13,7 +13,6 @@ import os
 load_dotenv()
 base_dir = os.getenv('PEOPLESOFT_ETL_BASE_DIR')
 sys.path.append(base_dir)
-import src.utils as utils
 main_base_dir = os.getenv('MAIN_BASE_DIR')
 sys.path.append(main_base_dir)
 from utils.oracle_db import OracleDB

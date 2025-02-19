@@ -1,5 +1,4 @@
 import src.utils as utils
-from src.peoplesoft_api import PeopleSoftAPI
 from src.async_peoplesoft_api import AsyncPeopleSoftAPI
 from src.async_worker import AsyncWorker
 from src.primary_keys import PrimaryKeys

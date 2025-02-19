@@ -6,7 +6,6 @@ import asyncio
 import aiohttp
 import datetime as dt
 import yaml
-import traceback
 import logging
 import pandas as pd
 from dotenv import load_dotenv
