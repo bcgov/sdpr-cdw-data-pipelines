@@ -109,68 +109,45 @@ def null_to_empty_str(null_val) -> str:
     return out
 
 
-def transform_data_type(value, oracle_data_type: str, nullable: str):
+def transform_data_type(
+    df: pl.DataFrame, df_col: str, oracle_data_type: str, nullable: str
+    ) -> pl.DataFrame:
     """
-    Transform the input value to the corresponding Python type based on the Oracle data type.
-
-    This function takes a value and casts it to the appropriate Python type 
-    that fits the Oracle data model. It also considers whether the value 
-    is nullable based on the nullable indicator provided.
+    Transforms the datatype of df_col in df based on oracel_data_type and nullable
+    to prepare the data for insertion into the associated oracle table.
 
     Args:
-        value: The input value to be transformed.
+        df: The df to be cleaned
+        df_col: the col in df to be cleaned
         oracle_data_type (str): The Oracle data type, such as "VARCHAR2", 
                                 "NUMBER", "DATE", etc.
         nullable (str): A flag indicating whether the column is nullable 
                         ("Y" for yes, "N" for no).
 
     Returns:
-        The value casted to the appropriate Python type based on the Oracle 
-        data type. If the column is not nullable and the value is None, 
-        an empty string is returned.
-
-    Notes:
-        - This function assumes that `null_to_empty_str`, `str_to_float`, 
-          and `str_to_datetime` are defined elsewhere.
+        The df with df_col cleaned
     """
     if nullable == "N":
-        value = null_to_empty_str(value)
+        df = df.with_columns(
+            pl.col(df_col)
+            .fill_null("")
+        )
     if oracle_data_type in ("VARCHAR2", "CHAR", "CLOB"):
-        pass  # No transformation needed for these types
+        df = df.with_columns(
+            pl.col(df_col)
+            .cast(pl.String, strict=False)
+        )
     elif oracle_data_type == "NUMBER":
-        value = str_to_float(value)
+        df = df.with_columns(
+            pl.col(df_col)
+            .cast(pl.Float64, strict=False)
+        )
     elif oracle_data_type in ("DATE", "TIMESTAMP", "TIMESTAMP(6)"):
-        value = str_to_datetime(value)
-    return value
-
-def cast_col_as(oracle_data_type: str):
-    """
-    Transform the input value to the corresponding Python type based on the Oracle data type.
-
-    This function takes a value and casts it to the appropriate Python type 
-    that fits the Oracle data model. It also considers whether the value 
-    is nullable based on the nullable indicator provided.
-
-    Args:
-        value: The input value to be transformed.
-        oracle_data_type (str): The Oracle data type, such as "VARCHAR2", 
-                                "NUMBER", "DATE", etc.
-
-    Returns:
-        The value casted to the appropriate Python type based on the Oracle 
-        data type. If the column is not nullable and the value is None, 
-        an empty string is returned.
-
-    Notes:
-        - This function assumes that `str_to_float` 
-          and `str_to_datetime` are defined elsewhere.
-    """
-    if oracle_data_type in ("VARCHAR2", "CHAR", "CLOB"):
-        return pl.Object
-    elif oracle_data_type == "NUMBER":
-        return pl.Float64
-    elif oracle_data_type in ("DATE", "TIMESTAMP", "TIMESTAMP(6)"):
-        return pl.Datetime
+        df = df.with_columns(
+            pl.col(df_col)
+            .cast(pl.Datetime, strict=False)
+        )
+    return df
 
 
 def apply_data_type_transformations(
@@ -204,15 +181,7 @@ def apply_data_type_transformations(
         col_name = row["col_name_src"]
         oracle_data_type = row["data_type_target"]
         nullable = row["nullable_target"]
-        col_dtype = cast_col_as(oracle_data_type)
-        df = df.with_columns(  
-            pl.col(col_name)
-            .map_elements(
-                lambda val: transform_data_type(val, oracle_data_type, nullable), 
-                return_dtype=col_dtype
-            )
-            .cast(col_dtype, strict=False)
-        )
+        df = transform_data_type(df, col_name, oracle_data_type, nullable)
     return df
 
 
