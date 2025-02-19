@@ -539,8 +539,6 @@ def build_tables(
                 last_rerun_of_failed_requests=last_rerun_of_failed_requests,
             )
 
-            # exit(16)
-
     for endpoint, table in endpoint_table_pairs:
         build_table(
             endpoint=endpoint,
