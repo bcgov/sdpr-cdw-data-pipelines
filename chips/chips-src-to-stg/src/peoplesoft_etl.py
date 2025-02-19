@@ -7,7 +7,7 @@ import aiohttp
 import datetime as dt
 import yaml
 import logging
-import pandas as pd
+import polars as pl
 from dotenv import load_dotenv
 import os
 import sys
@@ -180,7 +180,7 @@ async def get_pay_dates_list(etl_engine: ETLEngine) -> list:
         pay_dates = await etl_engine.api.get_items(
             session=session, endpoint=pay_dates_endpoint, params={'limit': 10000}
         )
-    df = pd.DataFrame.from_dict(pay_dates)
+    df = pl.DataFrame(pay_dates)
     dates = df['pay_end_dt'].to_list()
     return dates
 
