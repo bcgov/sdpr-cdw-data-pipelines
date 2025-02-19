@@ -1,6 +1,7 @@
 import oracledb
 from utils.windows_registry import WindowsRegistry
 import pandas as pd
+import polars as pl
 import logging
 
 logger = logging.getLogger('__main__.' + __name__)
@@ -178,6 +179,25 @@ class OracleDB:
         data = self.cursor.fetchall()
         columns = [column[0] for column in self.cursor.description]
         df = pd.DataFrame(data, columns=columns)
+        return df
+
+    def query_to_pl_df(self, query_string: str, parameters=None) -> pl.DataFrame:
+        """
+        Executes a query and returns the result as a polars DataFrame.
+
+        Args:
+            query_string (str): The SQL query to execute.
+            parameters (optional): The parameters to bind to the query.
+
+        Returns:
+            pl.DataFrame: A DataFrame containing the query results.
+        """
+        self.execute(statement=query_string, parameters=parameters)
+        data = self.cursor.fetchall()
+        columns = [column[0] for column in self.cursor.description]
+        df = pl.DataFrame(
+            data, schema=columns, orient="row", infer_schema_length=None
+        )
         return df
 
     def truncate(self, table_owner: str, table_name: str) -> None:

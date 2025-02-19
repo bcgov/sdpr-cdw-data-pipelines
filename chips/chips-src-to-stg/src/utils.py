@@ -238,13 +238,12 @@ def target_data_model(owner: str, table_name: str, db) -> pl.DataFrame:
           method that executes the provided SQL query and returns the result 
           as a pandas DataFrame.
     """
-    pd_df = db.query_to_df(f"""
+    df = db.query_to_pl_df(f"""
         select COLUMN_NAME, DATA_TYPE, DATA_LENGTH, NULLABLE
         from sys.dba_tab_columns
         where owner = '{owner}'
           and table_name = '{table_name}'
     """)
-    df = pl.DataFrame(pd_df)
     df.columns = [
         "col_name_target",
         "data_type_target",
