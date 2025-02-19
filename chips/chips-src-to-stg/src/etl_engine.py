@@ -1,12 +1,9 @@
 import src.utils as utils
-from src.peoplesoft_api import PeopleSoftAPI
 from src.async_peoplesoft_api import AsyncPeopleSoftAPI
 from src.async_worker import AsyncWorker
 from src.primary_keys import PrimaryKeys
 import oracledb
-import warnings
-import pandas as pd
-import numpy as np
+import polars as pl
 import asyncio
 import aiohttp
 import datetime as dt
@@ -22,13 +19,7 @@ from utils.oracle_db import OracleDB
 
 logger = logging.getLogger('__main__.' + __name__)
 
-# Display entire DataFrame when printing
-pd.set_option("display.max_columns", None)
-pd.set_option("display.max_rows", 100)
-
-# Warning Suppressions
-pd.options.mode.chained_assignment = None  # default='warn'
-warnings.simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
+pl.Config.set_tbl_rows(100)
 
 
 class ETLEngine:
@@ -63,36 +54,39 @@ class ETLEngine:
         self.worker = worker
         self.cache = cache
 
-    def extract(self, limit: int = 10000, offsets: list[int] = None) -> pd.DataFrame:
+    async def extract(
+        self, session: aiohttp.ClientSession, endpoint: str, params: dict
+        ) -> pl.DataFrame:
         """
         Gets data from the API and returns it in a DataFrame.
 
         Args:
-            limit (int, optional): The maximum number of records to retrieve. Defaults to 10000.
-            offsets (list[int], optional): List of offsets for pagination. Defaults to None.
+            session (aiohttp.ClientSession): The aiohttp session.
+            endpoint (str): The API endpoint.
+            params (dict): The request parameters.
 
         Returns:
-            pd.DataFrame: A DataFrame containing the extracted data.
+            pl.DataFrame: A DataFrame containing the extracted data.
 
         Raises:
             ExtractException: If an error occurs during extraction.
         """
         try:
-            src_records = asyncio.run(self.api.get_items_concurrently(self.api_endpoint))
-            self.extracted_data = pd.DataFrame(src_records)
-            return self.extracted_data
+            items = await self.api.get_items(session, endpoint, params)
+            data = pl.DataFrame(items, infer_schema_length=None)
+            return data
         except Exception as e:
             raise ExtractException(e)
 
-    def transform(self, extracted_data: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, extracted_data: pl.DataFrame) -> pl.DataFrame:
         """
         Transforms the extracted data.
 
         Args:
-            extracted_data (pd.DataFrame): The extracted data.
+            extracted_data (pl.DataFrame): The extracted data.
 
         Returns:
-            pd.DataFrame: The transformed data.
+            pl.DataFrame: The transformed data.
 
         Raises:
             TransformException: If an error occurs during transformation.
@@ -117,7 +111,7 @@ class ETLEngine:
             self.data_model_consistencies = utils.data_model_consistencies(self.data_model_mapping)
 
             # transform the extracted data
-            consistent_col_names_src = self.data_model_consistencies["col_name_src"].tolist()
+            consistent_col_names_src = self.data_model_consistencies["col_name_src"].to_list()
             transformed_data = extracted_data[consistent_col_names_src]
             transformed_data = utils.apply_data_type_transformations(
                 self.data_model_consistencies, transformed_data
@@ -125,10 +119,10 @@ class ETLEngine:
 
             # update the column names for the transformed data from the endpoint field names to the
             # target table names
-            consistent_col_names_target = self.data_model_consistencies["col_name_target"].tolist()
+            consistent_col_names_target = self.data_model_consistencies["col_name_target"].to_list()
             transformed_data.columns = consistent_col_names_target
 
-            transformed_data = transformed_data.replace({np.nan: None})
+            transformed_data = pl.DataFrame(transformed_data, nan_to_null=True)
 
             self.transformed_data = transformed_data
 
@@ -140,12 +134,12 @@ class ETLEngine:
         except Exception as e:
             raise TransformException(e)
 
-    def load(self, transformed_data: pd.DataFrame, truncate_first: bool = True) -> None:
+    def load(self, transformed_data: pl.DataFrame, truncate_first: bool = True) -> None:
         """
         Loads data into the database.
 
         Args:
-            transformed_data (pd.DataFrame): The transformed data to be loaded into the database.
+            transformed_data (pl.DataFrame): The transformed data to be loaded into the database.
             truncate_first (bool, optional): If True, truncates the table before loading. Defaults to True.
 
         Raises:
@@ -154,7 +148,7 @@ class ETLEngine:
         table_owner=self.oracle_table_owner
         table_name=self.oracle_table_name
         cols_to_load_list=transformed_data.columns
-        writeRows=list(transformed_data.itertuples(index=False, name=None))
+        writeRows=list(transformed_data.iter_rows())
         
         if truncate_first:
             self.oracledb.truncate(table_owner, table_name)
@@ -195,7 +189,7 @@ class ETLEngine:
         table_name: str,
         cols_to_merge_list: list[str],
         parameters,
-    ) -> None:
+        ) -> None:
         """
         Merges new records on the primary key defined or all columns if the primary key is undefined.
 
@@ -266,7 +260,7 @@ class ETLEngine:
 
     async def etl_task(
         self, session: aiohttp.ClientSession, endpoint: str, params: dict
-    ) -> None:
+        ) -> None:
         """
         Makes a single GET request to the endpoint and returns only the 'items' in the response,
         then transforms and loads the data into Oracle.
@@ -281,8 +275,7 @@ class ETLEngine:
         """
         logger.info(f"started {endpoint} {params} | tasks running: {self.worker.running_task_count}")
 
-        items = await self.api.get_items(session, endpoint, params)
-        extracted_data = pd.DataFrame(items)
+        extracted_data = await self.extract(session, endpoint, params)
         transformed_data = self.transform(extracted_data=extracted_data)
         self.load(transformed_data=transformed_data, truncate_first=False)
 
@@ -342,7 +335,7 @@ class ETLEngine:
         endpoint: str, 
         n_records_per_task: int,
         n_requests_per_session: int=500,
-    ) -> None:
+        ) -> None:
         """
         Runs all ETL iterations to load all the data from an endpoint to a table.
         Opens a new session every n_requests_per_session and creates pages based on the total
@@ -387,7 +380,7 @@ class ETLEngine:
         list_of_params: list[dict],
         n_records_per_task: int,
         n_requests_per_session: int=500,
-    ) -> None:
+        ) -> None:
         """
         Runs all ETL iterations to load all the data from an endpoint to a table.
         Opens a new session every n_requests_per_session and processes each set of params.
@@ -428,7 +421,7 @@ class ETLEngine:
         list_of_params: list[dict],
         n_records_per_task: int,
         n_requests_per_session: int=500,
-    ) -> None:
+        ) -> None:
         """
         Requests records for each param in list_of_params and loads the records into the associated
         table in Oracle.
