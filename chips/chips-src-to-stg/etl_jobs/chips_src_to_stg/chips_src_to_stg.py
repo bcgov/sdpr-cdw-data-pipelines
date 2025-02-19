@@ -71,7 +71,7 @@ def main():
     build_tables(
         endpoint_table_pairs=endpoint_table_pairs,
         n_task_workers=10,
-        start_task_sleep_time=2,
+        start_task_sleep_time=1,
         incremental_refresh=True,
         last_n_pay_dates_to_refresh_incrementally=3,
     )
