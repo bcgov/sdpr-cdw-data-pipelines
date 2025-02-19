@@ -1,6 +1,7 @@
 import oracledb
 from utils.windows_registry import WindowsRegistry
 import pandas as pd
+import polars as pl
 import logging
 
 logger = logging.getLogger('__main__.' + __name__)
@@ -42,7 +43,6 @@ class OracleDB:
             self.connect_w_win_reg(conn_str_key_endpoint=conn_str_key_endpoint)
         else:
             msg = 'Since conn_str_key_endpoint is None, use the connect function to connect to the DB.'
-            print(msg)
             logger.debug(msg)
 
     def connect_w_win_reg(self, conn_str_key_endpoint: str) -> None:
@@ -179,6 +179,25 @@ class OracleDB:
         data = self.cursor.fetchall()
         columns = [column[0] for column in self.cursor.description]
         df = pd.DataFrame(data, columns=columns)
+        return df
+
+    def query_to_pl_df(self, query_string: str, parameters=None) -> pl.DataFrame:
+        """
+        Executes a query and returns the result as a polars DataFrame.
+
+        Args:
+            query_string (str): The SQL query to execute.
+            parameters (optional): The parameters to bind to the query.
+
+        Returns:
+            pl.DataFrame: A DataFrame containing the query results.
+        """
+        self.execute(statement=query_string, parameters=parameters)
+        data = self.cursor.fetchall()
+        columns = [column[0] for column in self.cursor.description]
+        df = pl.DataFrame(
+            data, schema=columns, orient="row", infer_schema_length=None
+        )
         return df
 
     def truncate(self, table_owner: str, table_name: str) -> None:
@@ -391,7 +410,6 @@ class OracleDB:
             when not matched then insert ({self._list_of_cols_to_tgt_cols_str(cols_to_merge_list)}) 
                 values {self._bind_vars_str(cols_to_merge_list)}
         """
-        print(statement)
         self.execute_many(statement=statement, parameters=parameters)
         self.commit()
 

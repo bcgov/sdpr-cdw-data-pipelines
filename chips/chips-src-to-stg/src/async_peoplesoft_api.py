@@ -13,7 +13,6 @@ import os
 load_dotenv()
 base_dir = os.getenv('PEOPLESOFT_ETL_BASE_DIR')
 sys.path.append(base_dir)
-import src.utils as utils
 main_base_dir = os.getenv('MAIN_BASE_DIR')
 sys.path.append(main_base_dir)
 from utils.oracle_db import OracleDB
@@ -97,7 +96,7 @@ class AsyncPeopleSoftAPI:
             session: aiohttp.ClientSession,
             trace_config_ctx: SimpleNamespace,
             params: aiohttp.TraceRequestStartParams,
-        ) -> None:
+            ) -> None:
             current_attempt = trace_config_ctx.trace_request_ctx['current_attempt']
             if current_attempt > 1:
                 logger.info(f'Attempt {current_attempt} for request: {params.url}')
@@ -241,7 +240,7 @@ class AsyncPeopleSoftAPI:
 
     async def get_json(
         self, session: aiohttp.ClientSession, endpoint: str, params: dict = {}
-    ) -> dict:
+        ) -> dict:
         """
         Makes a GET request to the API and returns the response as JSON.
 
@@ -273,7 +272,7 @@ class AsyncPeopleSoftAPI:
         session: aiohttp.ClientSession,
         endpoint: str,
         params: dict={},
-    ) -> dict:
+        ) -> dict:
         """
         Retrieves only the 'items' from the JSON response of a GET request.
 
@@ -289,69 +288,6 @@ class AsyncPeopleSoftAPI:
         items = data["items"]
         return items
 
-    async def get_items_tasks(
-        self,
-        session: aiohttp.ClientSession,
-        endpoint: str,
-        limit: int,
-        offsets: list[int] = None,
-    ):
-        """
-        Produces tasks that request records from the specified endpoint.
-
-        Args:
-            session (aiohttp.ClientSession): The session to use for the requests.
-            endpoint (str): The API endpoint to request data from.
-            limit (int): The maximum number of records to retrieve per request.
-            offsets (list[int], optional): Specific offsets to use for the requests. If None, tasks will cover all available data.
-
-        Returns:
-            list: A list of asyncio tasks that will retrieve records from the endpoint.
-        """
-        if offsets is None:
-            offsets = await self.get_offsets(session, endpoint, limit)
-        tasks = []
-        for offset in offsets:
-            tasks.append(
-                asyncio.create_task(
-                    self.get_items(
-                        session=session,
-                        endpoint=endpoint,
-                        params={"limit": limit, "offset": offset},
-                    )
-                )
-            )
-            # add tasks >= 1s (=Retry-after header) apart to avoid 429 error
-            await asyncio.sleep(1.1)
-        return tasks
-
-    async def get_items_concurrently(
-        self,
-        endpoint: str,
-        limit: int = 10000,
-        offset_chunk: list[int] = None,
-    ) -> list:
-        """
-        Retrieves all items from the endpoint or only items for specified offsets.
-
-        Args:
-            endpoint (str): The API endpoint to request data from.
-            limit (int, optional): The maximum number of records to retrieve per request. Defaults to 10000.
-            offset_chunk (list[int], optional): Specific offsets for the requests. If None, all records are retrieved.
-
-        Returns:
-            list: A list of records retrieved from the endpoint.
-        """
-        connector = aiohttp.TCPConnector(force_close=True, limit=50)
-        async with aiohttp.ClientSession(base_url=self.base_url, connector=connector) as session:
-            tasks = await self.get_items_tasks(
-                session=session, endpoint=endpoint, limit=limit, offsets=offset_chunk
-            )
-        # Zero-sleep to allow underlying connections to close
-        await asyncio.sleep(0)
-        gathered_records = await asyncio.gather(*tasks, return_exceptions=True)
-        all_records = utils.flatten(gathered_records)
-        return all_records
 
     async def get_record_count(self, session: aiohttp.ClientSession, endpoint: str) -> int:
         """
@@ -386,7 +322,7 @@ class AsyncPeopleSoftAPI:
 
     async def get_offsets(
         self, session: aiohttp.ClientSession, endpoint: str, page_size: int
-    ) -> list[int]:
+        ) -> list[int]:
         """
         Generates a list of offsets for paginated requests to the specified endpoint.
 
