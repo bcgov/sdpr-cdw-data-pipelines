@@ -5,18 +5,28 @@ thedata as (
         emplid, 
         EMAILID,
     (
-        select ls.pay_period_end_date 
-        from cdw.chips_load_control lc
-        join cdw.chips_load_sched ls 
-            on lc.pay_period_end_date + 1 = ls.pay_period_start_date
-        where lc.curr_load_ind =1
+        select pay_end_dt pay_period_end_date
+        from chips_stg.ps_pay_calendar
+        where pay_end_dt = (
+            select max(pay_end_dt)
+            from chips_stg.ps_pay_calendar
+            where pay_begin_dt <= current_date
+                and pay_off_cycle_cal = 'N'
+                and paygroup = 'STD'
+                and trim(run_id) is not null
+        )
     ) pay_end_dt,
     (
-        select ls.pay_period_start_date 
-        from cdw.chips_load_control lc
-        join cdw.chips_load_sched ls 
-            on lc.pay_period_end_date + 1 = ls.pay_period_start_date
-        where lc.curr_load_ind =1
+        select pay_begin_dt pay_period_start_date
+        from chips_stg.ps_pay_calendar
+        where pay_begin_dt = (
+            select max(pay_begin_dt)
+            from chips_stg.ps_pay_calendar
+            where pay_begin_dt <= current_date
+                and pay_off_cycle_cal = 'N'
+                and paygroup = 'STD'
+                and trim(run_id) is not null
+        )
     ) pay_start_dt,
     row_number() over (partition by emplid 
         order by 
