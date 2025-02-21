@@ -6,9 +6,16 @@ thedata as (
         ) rnk
     from chips_stg.ps_pay_check  
     WHERE PAY_END_DT = (
-        SELECT PAY_PERIOD_END_DATE 
-        FROM CDW.CHIPS_LOAD_CONTROL 
-        WHERE CURR_LOAD_IND = 1
+        select pay_end_dt pay_period_end_date
+        from chips_stg.ps_pay_calendar
+        where pay_end_dt = (
+            select max(pay_end_dt)
+            from chips_stg.ps_pay_calendar
+            where pay_end_dt <= current_date
+                and pay_off_cycle_cal = 'N'
+                and paygroup = 'STD'
+                and trim(run_id) is not null
+        )
     )
 )
 select emplid, "NAME", pay_end_dt, PAY_START_DT
