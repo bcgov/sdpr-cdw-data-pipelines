@@ -1,6 +1,6 @@
-SELECT lpad("EMPLID",6,'0') "EMPLID",
-	"NAME",
-	"OVERRIDE_DEPTID",
-	"DRILL_THROUGH_YN"
-FROM "STIIP_SECURITY_REQUIREMENT_STG"
+select lpad(emplid, 6, '0') emplid,
+	name,
+	override_deptid,
+	drill_through_yn
+from chips_stg.stiip_security_requirement_stg
 ;
