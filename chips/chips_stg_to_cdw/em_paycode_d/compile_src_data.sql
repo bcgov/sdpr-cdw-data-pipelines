@@ -1,8 +1,9 @@
-SELECT "CODE_TYPE",
-    "CLASS",
-    "CLASS_DESCR",
-    "PAY_CD",
-    "PAY_DESCR",
-    "REDUCES_HOURS_WORKED"
-FROM "PAYCODES"
+select 
+    code_type,
+    class,
+    class_descr,
+    pay_cd,
+    pay_descr,
+    reduces_hours_worked
+from chips_stg.paycodes
 ;
