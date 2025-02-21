@@ -1,11 +1,5 @@
 with
 
-pay_period_end_date_load_control as (
-    select pay_period_end_date 
-    from cdw.chips_load_control 
-    where load_in_progress_ind = 1
-),
-
 ranked_depts as (
     select dept.*,
         row_number() over (partition by setid, deptid order by effdt desc) as rn
@@ -21,10 +15,6 @@ latest_eff_dt_by_dept as (
 load_latest_eff_dt_by_dept as (
     select * 
     from latest_eff_dt_by_dept
-    where effdt <= (
-        select * 
-        from pay_period_end_date_load_control
-    )
 ),
 
 ranked_companies AS (
@@ -42,10 +32,6 @@ latest_eff_dt_by_company as (
 load_latest_eff_dt_by_company as (
     select * 
     from latest_eff_dt_by_company
-    where effdt <= (
-        select * 
-        from pay_period_end_date_load_control
-    )
 ),
 
 level_query as (
