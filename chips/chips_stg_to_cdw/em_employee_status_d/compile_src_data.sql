@@ -1,8 +1,8 @@
-SELECT
+select
 	x.fieldvalue empl_status,
-	to_char(x.effdt,'yyyy-mm-dd hh24:mi:ss') effdt,
+	to_char(x.effdt, 'yyyy-mm-dd hh24:mi:ss') effdt,
 	x.xlatlongname descr,
-	DECODE(
+	decode(
         x.fieldvalue,
         'A','All Active',
         'L','All Active',
@@ -13,14 +13,14 @@ SELECT
         'T','All Non-Active',
         'UNKNOWN'
     ) status_grp
-FROM psxlatitem x
-WHERE x.fieldname = 'EMPL_STATUS'
-    AND x.eff_status = 'A'
-	AND x.effdt = (
-        SELECT MAX(x2.effdt) 
-        FROM psxlatitem  x2
-        WHERE x2.fieldname = x.fieldname
-            AND x2.fieldvalue = x.fieldvalue
-            AND x2.effdt <= SYSDATE
+from chips_stg.psxlatitem x
+where x.fieldname = 'EMPL_STATUS'
+    and x.eff_status = 'A'
+	and x.effdt = (
+        select max(x2.effdt) 
+        from chips_stg.psxlatitem x2
+        where x2.fieldname = x.fieldname
+            and x2.fieldvalue = x.fieldvalue
+            and x2.effdt <= sysdate
     )
 ;
