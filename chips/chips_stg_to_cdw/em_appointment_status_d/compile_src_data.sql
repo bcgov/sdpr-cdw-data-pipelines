@@ -1,8 +1,8 @@
-SELECT
-    DISTINCT j.empl_ctg as appointment_status,
-    x.descr as appt_status_descr,
-    x.descrshort as appt_descr_short,
-    DECODE(
+select
+    distinct j.empl_ctg appointment_status,
+    x.descr appt_status_descr,
+    x.descrshort appt_descr_short,
+    decode(
         j.empl_ctg,
         'K','A',
         'L','A',
@@ -10,7 +10,7 @@ SELECT
         'U','A',
         j.empl_ctg
     ) appointment_group,
-    DECODE(
+    decode(
         j.empl_ctg,
         'K','Auxiliary',
         'L','Auxiliary',
@@ -18,7 +18,7 @@ SELECT
         'U','Auxiliary',
         x.descr 
     ) appt_group_descr,
-    DECODE(
+    decode(
         j.empl_ctg,
         'K','Aux',
         'L','Aux',
@@ -26,20 +26,22 @@ SELECT
         'U','Aux',
         x.descrshort 
     ) appt_group_descr_short
-FROM ps_job j, (
-    SELECT
-        x.LABOR_AGREEMENT,
+from chips_stg.ps_job j
+left join (
+    select
+        x.labor_agreement,
         x.empl_ctg ,
         x.effdt,
         x.descr,
         x.descrshort
-    FROM ps_empl_ctg_l1 x
-    WHERE
-        --      X.LABOR_AGREEMENT='GOV'  AND
-        x.effdt = (SELECT MAX(x2.effdt) FROM  ps_empl_ctg_l1 x2 WHERE x.empl_ctg = x2.empl_ctg
-        and x.effdt<sysdate
-        --    and X.LABOR_AGREEMENT='GOV'
-    )
+    from chips_stg.ps_empl_ctg_l1 x
+    where
+        x.effdt = (
+            select max(x2.effdt) 
+            from chips_stg.ps_empl_ctg_l1 x2 
+            where x.empl_ctg = x2.empl_ctg
+                and x.effdt < sysdate
+        )
 ) x
-WHERE j.empl_ctg = x.empl_ctg(+)
+    ON j.empl_ctg = x.empl_ctg
 ;

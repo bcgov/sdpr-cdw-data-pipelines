@@ -16,24 +16,25 @@ select
     case
         when (
             select x.xlatlongname
-            from psxlatitem x
+            from chips_stg.psxlatitem x
             where jc.job_function = x.fieldvalue
                 and x.fieldname = 'TGB_JOB_FUNCTION'
                 and x.effdt = (
                     select max(xx.effdt)
-                    from psxlatitem xx
+                    from chips_stg.psxlatitem xx
                     where xx.fieldname = x.fieldname
                         and xx.fieldvalue = x.fieldvalue
                         and xx.effdt <= jc.effdt
                 )
         ) is not null
             then (
-                select x.xlatlongname from psxlatitem x
+                select x.xlatlongname 
+                from chips_stg.psxlatitem x
                 where jc.job_function = x.fieldvalue
                     and x.fieldname = 'TGB_JOB_FUNCTION'
                     and x.effdt = (
                         select max(xx.effdt)
-                        from psxlatitem xx
+                        from chips_stg.psxlatitem xx
                         where xx.fieldname = x.fieldname
                             and xx.fieldvalue = x.fieldvalue
                             and xx.effdt <= jc.effdt
@@ -41,7 +42,7 @@ select
             )
         else jc.job_function
     end job_func_descr,
-    substr(jc.job_function,1,2) emp_group,
+    substr(jc.job_function, 1, 2) emp_group,
     DECODE (
         SUBSTR (jc.job_function, 1, 2),
         '11', 'BCGEU',
@@ -63,13 +64,13 @@ select
 	    '0','Excluded',
 	    null
    ) incl_excl_descr
-from ps_jobcode_tbl jc
+from chips_stg.ps_jobcode_tbl jc
 where jc.effdt >= (
-    select nvl(max(to_date(x2.effdt,'yyyy-mm-dd hh24:mi:ss')),
-        to_date('19400101','yyyymmdd'))
+    select nvl(max(to_date(x2.effdt, 'yyyy-mm-dd hh24:mi:ss')),
+        to_date('19400101', 'yyyymmdd'))
     from cdw.em_job_class_d x2
     where jc.setid = x2.setid
         and jc.jobcode = x2.jobcode
 )
-ORDER BY jc.setid,jc.jobcode,jc.effdt
+order by jc.setid, jc.jobcode, jc.effdt
 ;
