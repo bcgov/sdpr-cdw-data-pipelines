@@ -50,8 +50,7 @@ class Refresh:
         _table_exists_action = f'table_exists_action={table_exists_action}'
 
         cmd = f'impdp "{_destination_db}" {_directory} {_network_link} {_tables} {_remap} {_table_exists_action}'
-        sanitized_cmd = cmd.replace(to_db_password, "****")
-        logger.info(sanitized_cmd)
+        # logger.info(cmd) # note: this will log sensitive credentials
         c = Cmd()
         c.run_cmd(cmd)
 
@@ -79,8 +78,7 @@ class Refresh:
         _table_exists_action = f'table_exists_action={table_exists_action}'
 
         cmd = f'impdp "{_destination_db}" {_directory} {_network_link} {_schemas} {_remap} {_table_exists_action}'
-        sanitized_cmd = cmd.replace(to_db_password, "****")
-        logger.info(sanitized_cmd)
+        # logger.info(cmd) # note: this will log sensitive credentials
         c = Cmd()
         c.run_cmd(cmd)
 
