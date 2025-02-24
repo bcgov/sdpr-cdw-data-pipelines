@@ -34,7 +34,7 @@ if __name__ == "__main__":
         db = OracleDB(conn_str_key_endpoint=os.getenv('ORACLE_CONN_STRING_KEY'))
         data_extractor = DataExtractor(oracle_db=db)
         # delete then map M: drive
-        drive = 'M:'
+        drive = 'L:'
         base_dir = r'\\sfp.idir.bcgov\s134\s34404'
         data_extractor.delete_drive(drive=drive)
         data_extractor.map_drive(
