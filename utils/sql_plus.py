@@ -60,7 +60,7 @@ class SqlPlus:
             {command} {destination_table} using -
             {query}
         """
-        logger.info(statement)
+        # logger.info(statement) # note: this will log sensitive credentials
         self.run_sqlplus(statement)
 
     def create_copy(
