@@ -27,7 +27,7 @@ def main():
         cdw.em_employee_status_d,
         cdw.em_position_d,
         cdw.em_bu_security_d,
-        cdw.em_employee_status_d,
+        cdw.em_job_class_d,
         cdw.em_paycode_d
     '''
     r = Refresh()
