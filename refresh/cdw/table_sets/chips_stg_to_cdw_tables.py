@@ -21,14 +21,19 @@ logging.basicConfig(
 
 def main():
     tables = '''
-        cdw.em_stiip_f,
         cdw.em_appointment_status_d,
-        cdw.or_location_d,
-        cdw.em_employee_status_d,
-        cdw.em_position_d,
         cdw.em_bu_security_d,
+        cdw.em_efp_fte_f,
+        cdw.em_employee_d,
+        cdw.em_employee_status_d,
+        cdw.em_fte_burn_f,
         cdw.em_job_class_d,
         cdw.em_paycode_d
+        cdw.em_position_d,
+        cdw.em_stiip_f,
+        cdw.em_userid_to_emplid_xref_d,
+        cdw.or_business_unit_d,
+        cdw.or_location_d
     '''
     r = Refresh()
     r.import_table_w_datapump(tables=tables)
