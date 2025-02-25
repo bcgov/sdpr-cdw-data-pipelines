@@ -1,43 +1,52 @@
--- not used by datastage because of variables
+with
 
--- SELECT
---     f.emplid,
---     f.pay_end_dt,
---     trim(TO_CHAR(f.pay_end_dt,'YYYYMMDD')) || '0' as PAY_END_DT_SK,
---     sc.SETID||F.deptid bu_bk,
---     sc2.setid||F.jobcode jobcode_bk,
---     f.position_nbr,
---     f.appointment_status,
---     j.empl_status,
---     j.setid_location||j.location location_bk,
---     f.fte_reg,
---     f.fte_ovt,
---     f.fire_ovt,
---     '[DIM_SID (Unmatched)]' REASON
--- FROM
---     ps_job j,
---     ps_tgb_fteburn_tbl f,
---     PS_SET_CNTRL_REC sc,
---     PS_SET_CNTRL_REC sc2
--- WHERE f.emplid = j.emplid
---     AND f.empl_rcd = j.empl_rcd
---     AND j.effdt = (
---         SELECT MAX(j2.effdt)
---         FROM ps_job j2
---         WHERE j2.emplid = j.emplid
---             AND j2.empl_rcd = j.empl_rcd
---             AND j2.effdt <= f.pay_end_dt
---     )
---     AND j.effseq = (
---         SELECT MAX(j3.effseq)
---         FROM ps_job j3
---         WHERE j3.emplid = j.emplid
---             AND j3.empl_rcd = j.empl_rcd
---             AND j3.effdt = j.effdt
---     )
---     AND f.pay_end_dt BETWEEN TO_DATE('#V_BEG_DATE_RANGE#','DD-MON-YYYY') AND TO_DATE('#V_END_DATE_RANGE#','DD-MON-YYYY')
---     AND sc.RECNAME = 'DEPT_TBL'  
---     AND sc.SETCNTRLVALUE = F.business_unit
---     AND sc2.RECNAME = 'JOBCODE_TBL'  
---     AND sc2.SETCNTRLVALUE = F.business_unit
--- ;
+-- get the latest pay end date in em_fte_burn_f
+last_pay_end_date_loaded as (
+    select max(to_date(substr(pay_end_dt_sk, 1, length(pay_end_dt_sk)-1), 'yyyy-mm-dd')) pay_end_dt 
+    from cdw.em_fte_burn_f
+)
+
+SELECT
+    f.emplid,
+    f.pay_end_dt,
+    trim(TO_CHAR(f.pay_end_dt,'YYYYMMDD')) || '0' as PAY_END_DT_SK,
+    sc.SETID||F.deptid bu_bk,
+    sc2.setid||F.jobcode jobcode_bk,
+    f.position_nbr,
+    f.appointment_status,
+    j.empl_status,
+    j.setid_location||j.location location_bk,
+    f.fte_reg,
+    f.fte_ovt,
+    f.fire_ovt,
+    '[DIM_SID (Unmatched)]' REASON
+from
+    chips_stg.ps_job j,
+    chips_stg.ps_tgb_fteburn_tbl f,
+    chips_stg.ps_set_cntrl_rec sc,
+    chips_stg.ps_set_cntrl_rec sc2
+where f.emplid = j.emplid
+    and f.empl_rcd = j.empl_rcd
+    and j.effdt = (
+        select max(j2.effdt)
+        from chips_stg.ps_job j2
+        where j2.emplid = j.emplid
+            and j2.empl_rcd = j.empl_rcd
+            and j2.effdt <= f.pay_end_dt
+    )
+    and j.effseq = (
+        select max(j3.effseq)
+        from chips_stg.ps_job j3
+        where j3.emplid = j.emplid
+            and j3.empl_rcd = j.empl_rcd
+            and j3.effdt = j.effdt
+    )
+    AND f.pay_end_dt >= (
+        select * from last_pay_end_date_loaded
+    )
+    -- AND f.pay_end_dt BETWEEN TO_DATE('#V_BEG_DATE_RANGE#','DD-MON-YYYY') AND TO_DATE('#V_END_DATE_RANGE#','DD-MON-YYYY')
+    AND sc.RECNAME = 'DEPT_TBL'  
+    AND sc.SETCNTRLVALUE = F.business_unit
+    AND sc2.RECNAME = 'JOBCODE_TBL'  
+    AND sc2.SETCNTRLVALUE = F.business_unit
+;
