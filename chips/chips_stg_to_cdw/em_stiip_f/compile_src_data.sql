@@ -2,14 +2,8 @@ with
 
 -- get the latest pay_end_date from both tables then return the earliest
 last_pay_end_date_loaded as (
-    select min(pay_end_dt) pay_end_dt
-    from (
-        select max(pay_end_dt) pay_end_dt
-        from chips_stg.ps_pay_earnings
-        union 
-        select max(pay_end_dt) 
-        from chips_stg.ps_pay_oth_earns
-    )
+    select max(to_date(substr(pay_end_dt_sk, 1, length(pay_end_dt_sk)-1), 'yyyy-mm-dd')) pay_end_dt 
+    from cdw.em_stiip_f
 )
 
 select
