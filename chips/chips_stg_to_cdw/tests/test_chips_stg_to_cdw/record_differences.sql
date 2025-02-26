@@ -9,7 +9,7 @@ b as
 (select * from cdw.em_appointment_status_d@cwp_link minus select * from cdw.em_appointment_status_d),
 c as 
 (select 'this env' env, a.* from a union select 'prod' env, b.* from b)
-select * from c
+select * from c order by appointment_status, env
 ;
 
 with
@@ -29,8 +29,7 @@ b as
 (select * from cdw.em_employee_d@cwp_link minus select * from cdw.em_employee_d),
 c as 
 (select 'this env' env, a.* from a union select 'prod' env, b.* from b)
-select * from c
-order by emplid, env
+select * from c order by emplid, env
 ;
 
 with
@@ -40,7 +39,7 @@ b as
 (select * from cdw.em_employee_status_d@cwp_link minus select * from cdw.em_employee_status_d),
 c as 
 (select 'this env' env, a.* from a union select 'prod' env, b.* from b)
-select * from c
+select * from c order by empl_status, env
 ;
 
 with
@@ -70,7 +69,7 @@ b as
 (select * from cdw.em_position_d@cwp_link minus select * from cdw.em_position_d),
 c as 
 (select 'this env' env, a.* from a union select 'prod' env, b.* from b)
-select * from c
+select * from c order by position_descr, udt_date desc, env
 ;
 
 with
@@ -100,7 +99,7 @@ b as
 (select * from cdw.or_location_d@cwp_link minus select * from cdw.or_location_d),
 c as 
 (select 'this env' env, a.* from a union select 'prod' env, b.* from b)
-select * from c
+select * from c order by setid_loc, eff_dt, env
 ;
 
 --------------------------------------------------------------------------
