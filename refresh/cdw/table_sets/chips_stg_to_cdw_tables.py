@@ -28,7 +28,7 @@ def main():
         cdw.em_employee_status_d,
         cdw.em_fte_burn_f,
         cdw.em_job_class_d,
-        cdw.em_paycode_d
+        cdw.em_paycode_d,
         cdw.em_position_d,
         cdw.em_stiip_f,
         cdw.em_userid_to_emplid_xref_d,

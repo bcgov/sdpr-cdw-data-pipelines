@@ -1,3 +1,7 @@
+--------------------------------------------------------------------------
+-- Dimension Tables
+--------------------------------------------------------------------------
+
 with
 a as (
 (select * from cdw.em_appointment_status_d minus select * from cdw.em_appointment_status_d@cwp_link)
@@ -18,15 +22,6 @@ select count(*) from a
 
 with
 a as (
-(select * from cdw.em_efp_fte_f minus select * from cdw.em_efp_fte_f@cwp_link)
-union
-(select * from cdw.em_efp_fte_f@cwp_link minus select * from cdw.em_efp_fte_f)
-)
-select count(*) from a
-;
-
-with
-a as (
 (select * from cdw.em_employee_d minus select * from cdw.em_employee_d@cwp_link)
 union
 (select * from cdw.em_employee_d@cwp_link minus select * from cdw.em_employee_d)
@@ -39,15 +34,6 @@ a as (
 (select * from cdw.em_employee_status_d minus select * from cdw.em_employee_status_d@cwp_link)
 union
 (select * from cdw.em_employee_status_d@cwp_link minus select * from cdw.em_employee_status_d)
-)
-select count(*) from a
-;
-
-with
-a as (
-(select * from cdw.em_fte_burn_f minus select * from cdw.em_fte_burn_f@cwp_link)
-union
-(select * from cdw.em_fte_burn_f@cwp_link minus select * from cdw.em_fte_burn_f)
 )
 select count(*) from a
 ;
@@ -81,15 +67,6 @@ select count(*) from a
 
 with
 a as (
-(select * from cdw.em_stiip_f minus select * from cdw.em_stiip_f@cwp_link)
-union
-(select * from cdw.em_stiip_f@cwp_link minus select * from cdw.em_stiip_f)
-)
-select count(*) from a
-;
-
-with
-a as (
 (select * from cdw.em_userid_to_emplid_xref_d minus select * from cdw.em_userid_to_emplid_xref_d@cwp_link)
 union
 (select * from cdw.em_userid_to_emplid_xref_d@cwp_link minus select * from cdw.em_userid_to_emplid_xref_d)
@@ -111,6 +88,37 @@ a as (
 (select * from cdw.or_location_d minus select * from cdw.or_location_d@cwp_link)
 union
 (select * from cdw.or_location_d@cwp_link minus select * from cdw.or_location_d)
+)
+select count(*) from a
+;
+
+--------------------------------------------------------------------------
+-- Fact Tables
+--------------------------------------------------------------------------
+
+with
+a as (
+(select * from cdw.em_efp_fte_f minus select * from cdw.em_efp_fte_f@cwp_link)
+union
+(select * from cdw.em_efp_fte_f@cwp_link minus select * from cdw.em_efp_fte_f)
+)
+select count(*) from a
+;
+
+with
+a as (
+(select * from cdw.em_fte_burn_f minus select * from cdw.em_fte_burn_f@cwp_link)
+union
+(select * from cdw.em_fte_burn_f@cwp_link minus select * from cdw.em_fte_burn_f)
+)
+select count(*) from a
+;
+
+with
+a as (
+(select * from cdw.em_stiip_f minus select * from cdw.em_stiip_f@cwp_link)
+union
+(select * from cdw.em_stiip_f@cwp_link minus select * from cdw.em_stiip_f)
 )
 select count(*) from a
 ;
