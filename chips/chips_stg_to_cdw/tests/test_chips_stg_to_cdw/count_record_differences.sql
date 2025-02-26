@@ -18,9 +18,9 @@ select count(*) from a
 
 with
 a as (
-(select * from cdw.em_eft_fte_f minus select * from cdw.em_eft_fte_f@cwp_link)
+(select * from cdw.em_efp_fte_f minus select * from cdw.em_efp_fte_f@cwp_link)
 union
-(select * from cdw.em_eft_fte_f@cwp_link minus select * from cdw.em_eft_fte_f)
+(select * from cdw.em_efp_fte_f@cwp_link minus select * from cdw.em_efp_fte_f)
 )
 select count(*) from a
 ;
