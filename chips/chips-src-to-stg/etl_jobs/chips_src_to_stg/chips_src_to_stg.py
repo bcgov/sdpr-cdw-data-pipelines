@@ -79,6 +79,8 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+        sys.exit(0)
     except:
         logging.exception('Got exception on main handler')
+        sys.exit(1)
         raise
