@@ -43,7 +43,7 @@ REM  ###### SET STARTING_STEP=STEP010
 @REM -------------------------------------------------------------------------------
 @REM RUN CAT Data Manager Job Stream
 @REM ------------------------------------------------------------
-@CALL CHIPS_ETL_STEPS.bat %JOB_NAME% %STARTING_STEP%
+@CALL E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_cdw\scheduled_etl_jobs\chips_etl_steps.bat %JOB_NAME% %STARTING_STEP%
 
 :EXIT
 @SET EXIT_CODE=%RET%
