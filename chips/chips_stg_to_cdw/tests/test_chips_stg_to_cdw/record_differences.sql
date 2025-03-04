@@ -19,7 +19,7 @@ b as
 (select * from cdw.em_bu_security_d@cwp_link minus select * from cdw.em_bu_security_d),
 c as 
 (select 'this env' env, a.* from a union select 'prod' env, b.* from b)
-select * from c order by hier_level, env
+select * from c order by hier_level, bu_bk, env
 ;
 
 with
@@ -124,7 +124,7 @@ b as
 (select * from cdw.em_fte_burn_f@cwp_link minus select * from cdw.em_fte_burn_f),
 c as 
 (select 'this env' env, a.* from a union select 'prod' env, b.* from b)
-select * from c order by pay_end_dt_sk desc, emplid, env
+select * from c order by pay_end_dt_sk desc, emplid, fte_reg, env
 ;
 
 with
