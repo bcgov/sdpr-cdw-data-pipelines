@@ -37,3 +37,5 @@ commit;
 create bitmap index icm_vpd_recon_count_dt_b 
 on ods.icm_vpd_recon_count (extract_dt)
 ;
+
+commit;
