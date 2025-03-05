@@ -9,5 +9,5 @@
 3.	Select Domain Management and Engine Credentials
 4.	Click Aurelia and then press button Open user credentials
 5.	In the User Selection panel, select your username and then press Finalize selection of users
-6.	In the Credentials assigned to selected users, enter your idir in the User name field and enter your idir password and confirm it.  Press Save and Close.
+6.	In the Credentials assigned to selected users, enter your idir (i.e. OS User) in the User name field and enter your idir password and confirm it.  Press Save and Close.
 7.	You should now be able to log on normally to DataStage.
