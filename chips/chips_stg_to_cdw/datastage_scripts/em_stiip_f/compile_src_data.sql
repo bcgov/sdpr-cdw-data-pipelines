@@ -1,11 +1,3 @@
-with
-
--- get the latest pay_end_date from both tables then return the earliest
-last_pay_end_date_loaded as (
-    select max(to_date(substr(pay_end_dt_sk, 1, length(pay_end_dt_sk)-1), 'yyyy-mm-dd')) pay_end_dt 
-    from cdw.em_stiip_f
-)
-
 select
     appointment_status,
     LEAVE_END_DT_SK,
@@ -89,9 +81,6 @@ from ( -- B
                 AND B.ERNCD IN ('SIZ','SIX','SIH','SIP','SIS','S57', 'ESL')   --  'SIL'
                 AND A.COMPANY = 'GOV'
                 AND A.PAYGROUP IN ('STD','OBL','LBM')
-                AND A.pay_end_dt >= (
-                    select * from last_pay_end_date_loaded
-                ) 
         group by
             A.earns_begin_dt, 
             A.earns_end_dt, 
