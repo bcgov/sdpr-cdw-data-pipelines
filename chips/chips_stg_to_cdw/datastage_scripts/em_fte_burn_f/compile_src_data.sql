@@ -1,9 +1,7 @@
 with
 
--- get the latest pay end date in em_fte_burn_f
-last_pay_end_date_loaded as (
-    select max(to_date(substr(pay_end_dt_sk, 1, length(pay_end_dt_sk)-1), 'yyyy-mm-dd')) pay_end_dt 
-    from cdw.em_fte_burn_f
+min_pay_end_date_to_load as (
+    select current_date - 28 from dual
 )
 
 SELECT
@@ -41,10 +39,7 @@ where f.emplid = j.emplid
             and j3.empl_rcd = j.empl_rcd
             and j3.effdt = j.effdt
     )
-    AND f.pay_end_dt >= (
-        select * from last_pay_end_date_loaded
-    )
-    -- AND f.pay_end_dt BETWEEN TO_DATE('#V_BEG_DATE_RANGE#','DD-MON-YYYY') AND TO_DATE('#V_END_DATE_RANGE#','DD-MON-YYYY')
+    and f.pay_end_dt >= (select * from min_pay_end_date_to_load)
     AND sc.RECNAME = 'DEPT_TBL'  
     AND sc.SETCNTRLVALUE = F.business_unit
     AND sc2.RECNAME = 'JOBCODE_TBL'  
