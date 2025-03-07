@@ -14,7 +14,7 @@ select
         WHEN '10' THEN 'Jan'
         WHEN '11' THEN 'Feb'
         WHEN '12' THEN 'Mar'
-        ELSE 'XXX' -- unexpected value
+        ELSE null
     end || ' '  ||
         substr (to_char(to_number(substr(to_char(pay_periods_cnt.fscl_period_id), 1, 4))-1), 3, 2) ||
         '-' || substr(to_char(pay_periods_cnt.fscl_period_id), 3, 2)
@@ -39,8 +39,7 @@ from (
         sum(fire_ovt) as fire_ovt,
         sum(fte_reg + fte_ovt + fire_ovt) as fte_burn
     from chips_stg.ps_tgb_fteburn_tbl
-    where pay_end_dt >= to_date('20060401', 'YYYYMMDD')
-        and business_unit = 'BC031'
+    where business_unit = 'BC031'
     group by to_number(to_char(pay_end_dt, 'YYYYMM')), deptid, tgb_gl_response
 ) FTE_Sum
 inner join (
@@ -48,7 +47,7 @@ inner join (
         clndr_pay_month,
         to_number(clndr_pay_month) as clndr_mth_id,
         case
-            when substr(clndr_pay_month,5,2) <='03' then to_number(clndr_pay_month) + 9   -- Jan, Feb, Mar
+            when substr(clndr_pay_month,5,2) <= '03' then to_number(clndr_pay_month) + 9   -- Jan, Feb, Mar
             else ((to_number(substr(clndr_pay_month,1,4))+1)*100) 
                 + to_number(substr(clndr_pay_month, 5, 2)) - 3
         end as fscl_period_id,
@@ -57,7 +56,6 @@ inner join (
         select distinct pay_end_dt, to_char(pay_end_dt, 'YYYYMM') as clndr_pay_month 
         from chips_stg.ps_pay_calendar
     )
-    where clndr_pay_month >= '200601'
     group by clndr_pay_month,
         case
             when substr(clndr_pay_month,5,2) <= '03' then to_number(clndr_pay_month) + 9
