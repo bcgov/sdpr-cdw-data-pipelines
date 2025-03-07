@@ -24,9 +24,7 @@ def main():
     Main function to initiate the ETL process for specified PeopleSoft tables.
     
     This function defines a list of endpoint-table pairs and calls the
-    build_tables function to perform the ETL tasks. The function is designed
-    to handle multiple tables efficiently using specified parameters for task
-    workers and sleep time.
+    build_tables function to perform the ETL tasks.
     """
     endpoint_table_pairs = [
         ("ps_earnings_tbl", "PS_EARNINGS_TBL"),
@@ -79,6 +77,8 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+        sys.exit(0)
     except:
         logging.exception('Got exception on main handler')
+        sys.exit(1)
         raise
