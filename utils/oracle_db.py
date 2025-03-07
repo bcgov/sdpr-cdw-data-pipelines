@@ -164,6 +164,29 @@ class OracleDB:
         logger.debug(f'executing many "{statement}"')
         self.cursor.executemany(statement, parameters)
 
+    def run_sql_script(self, sql_file_path, parameters=None):
+        """ executes SQL statements in the SQL script at sql_file_path """
+
+        def get_file_content_as_str(filepath):
+            """Returns the contents of a file as a string"""
+            opened_file = open(filepath, 'r')
+            file = opened_file.read()
+            opened_file.close()
+            return file
+
+        def split_sql_statements_in_str(sql_str):
+            """Returns a list of SQL statements inside a singular string of SQL statements seperated by semi-colons"""
+            sql_splitlines = sql_str.splitlines()
+            sql_joined_lines = " ".join(sql_splitlines)
+            sql_statements = [statement for statement in sql_joined_lines.split(';') if statement]
+            return sql_statements
+
+        sql_file_content = get_file_content_as_str(filepath=sql_file_path)
+        sql_statements = split_sql_statements_in_str(sql_str=sql_file_content)
+
+        for statement in sql_statements:
+            self.execute(statement, parameters=parameters)
+
     def query_to_df(self, query_string: str, parameters=None) -> pd.DataFrame:
         """
         Executes a query and returns the result as a pandas DataFrame.
