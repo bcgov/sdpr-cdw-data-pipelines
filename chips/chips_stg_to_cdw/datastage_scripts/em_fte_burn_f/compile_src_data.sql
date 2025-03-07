@@ -1,7 +1,7 @@
 with
 
 min_pay_end_date_to_load as (
-    select current_date - 28 from dual
+    select current_date - 70 from dual
 )
 
 SELECT
