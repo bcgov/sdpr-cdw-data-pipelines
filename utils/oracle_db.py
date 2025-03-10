@@ -167,12 +167,18 @@ class OracleDB:
     def run_sql_script(self, sql_file_path, parameters=None):
         """ executes SQL statements in the SQL script at sql_file_path """
 
-        def get_file_content_as_str(filepath):
-            """Returns the contents of a file as a string"""
-            opened_file = open(filepath, 'r')
-            file = opened_file.read()
-            opened_file.close()
-            return file
+        def get_sql_from_file_as_str(filepath):
+            """Returns the SQL in a file as a string"""
+            lines = []
+            with open(filepath, 'r') as file:
+                for line in file:
+                    # exclude comments
+                    if '--' in line:
+                        index = line.find('--')
+                        line = line[:index]
+                    lines.append(line)
+            sql = ''.join(lines)
+            return sql
 
         def split_sql_statements_in_str(sql_str):
             """Returns a list of SQL statements inside a singular string of SQL statements seperated by semi-colons"""
@@ -181,7 +187,7 @@ class OracleDB:
             sql_statements = [statement for statement in sql_joined_lines.split(';') if statement]
             return sql_statements
 
-        sql_file_content = get_file_content_as_str(filepath=sql_file_path)
+        sql_file_content = get_sql_from_file_as_str(filepath=sql_file_path)
         sql_statements = split_sql_statements_in_str(sql_str=sql_file_content)
 
         for statement in sql_statements:
