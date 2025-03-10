@@ -24,9 +24,7 @@ logging.basicConfig(
 
 def main():
     db = OracleDB(conn_str_key_endpoint = odb_conn_str_key_endpoint)
-
     tasks_dir = r'E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_ods\etl_jobs\build_employee_movement\tasks\\'
-    # tasks_dir = r'E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_ods\datastage_scripts\build_employee_movement\\'
     sql_file_enpoints = [
         r'em_temp_jcode.sql',
         r'em_temp_fte_burn1.sql',
