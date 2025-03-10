@@ -4,3 +4,5 @@ create table ods.em_temp_dept_tab1 as (
     where eff_status='A' 
     group by deptid
 );
+
+commit;

@@ -12,3 +12,5 @@ create table ods.em_temp_bu11 as
     left join ods.em_temp_bu5 b  
         on a.p_deptid=b.bu_deptid
 ;
+
+commit;

@@ -1,4 +1,4 @@
-create table em_temp_bu3 as 
+create table ods.em_temp_bu3 as 
     select 
         EMPLID, 
         EMPL_NAME, 
@@ -64,3 +64,5 @@ create table em_temp_bu3 as
     from ods.em_temp_bu1 
     where n_level1_descr is null
 ;
+
+commit;

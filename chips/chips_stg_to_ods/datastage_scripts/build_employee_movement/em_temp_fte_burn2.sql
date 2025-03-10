@@ -6,3 +6,5 @@ create table ods.em_temp_fte_burn2 as (
         from ods.em_temp_fte_burn1
     )
 );
+
+commit;

@@ -6,3 +6,5 @@ create table ods.em_temp_act_reas2 as (
         from ods.em_temp_act_reas1
     )
 );
+
+commit;

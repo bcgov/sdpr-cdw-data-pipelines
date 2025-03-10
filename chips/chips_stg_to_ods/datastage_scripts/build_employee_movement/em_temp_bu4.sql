@@ -3,3 +3,5 @@ create table ods.em_temp_bu4 as
     from cdw.OR_BUSINESS_UNIT_D 
     group by bu_deptid
 ;
+
+commit;

@@ -6,3 +6,5 @@ create table ods.em_temp_pos_num1 as (
         from ods.em_temp_pos_dat1
     )
 );
+
+commit;

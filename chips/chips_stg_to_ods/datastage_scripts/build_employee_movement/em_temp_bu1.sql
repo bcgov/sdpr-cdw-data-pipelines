@@ -1,4 +1,4 @@
-create table em_temp_bu1 as 
+create table ods.em_temp_bu1 as 
     select a.*, 
         b.level1_descr as n_level1_descr, 
         b.level2_descr as n_level2_descr,
@@ -13,3 +13,5 @@ create table em_temp_bu1 as
         on a.n_deptid=b.bu_deptid 
             and a.effdt between b.eff_date and nvl(b.end_date,sysdate)
 ;
+
+commit;

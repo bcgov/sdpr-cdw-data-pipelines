@@ -6,3 +6,5 @@ create table ods.em_temp_dept_tab2 as (
         from ods.em_temp_dept_tab1
     )
 );
+
+commit;

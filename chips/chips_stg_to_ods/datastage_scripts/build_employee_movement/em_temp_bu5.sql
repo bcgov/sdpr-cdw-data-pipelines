@@ -6,3 +6,5 @@ create table ods.em_temp_bu5 as
         from ods.em_temp_bu4
     )
 ;
+
+commit;

@@ -37,3 +37,5 @@ create table ods.em_temp_q4 as (
         lag(annual_rt,1,0.00) over (partition by emplid order by effdt, effseq) as p_annual_rt 
     from ods.em_temp_q3)
 ;
+
+commit;
