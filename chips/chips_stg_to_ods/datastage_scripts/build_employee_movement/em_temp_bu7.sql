@@ -3,3 +3,5 @@ create table ods.em_temp_bu7 as
     union 
     select * from ods.em_temp_bu2
 ;
+
+commit;

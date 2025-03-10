@@ -118,3 +118,5 @@ create table ods.em_temp_empl_movement compress as
         and a.effdt<=(select pay_end_dt from ods.em_temp_last_pay) 
     order by emplid, effdt, effseq
 ;
+
+commit;

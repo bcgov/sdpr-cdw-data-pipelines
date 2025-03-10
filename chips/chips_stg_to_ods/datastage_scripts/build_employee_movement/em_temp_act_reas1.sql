@@ -4,3 +4,5 @@ create table ods.em_temp_act_reas1 as (
     where eff_status='A' 
     group by action, action_reason
 );
+
+commit;

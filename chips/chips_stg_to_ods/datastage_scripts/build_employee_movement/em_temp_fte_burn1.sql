@@ -3,3 +3,5 @@ create table ods.em_temp_fte_burn1 as (
     from CHIPS_STG.PS_TGB_FTEBURN_TBL 
     group by emplid, business_unit
 );
+
+commit;

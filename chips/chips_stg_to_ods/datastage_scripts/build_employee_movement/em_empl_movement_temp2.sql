@@ -3,3 +3,5 @@ create table ods.em_empl_movement_temp2 compress as
     union 
     select * from ods.em_temp_bu11
 ;
+
+commit;

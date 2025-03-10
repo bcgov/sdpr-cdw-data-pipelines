@@ -8,3 +8,5 @@ create table ods.em_temp_jcode as
         )-1 as effenddt 
     from CHIPS_STG.PS_JOBCODE_TBL
 ;
+
+commit;

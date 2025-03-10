@@ -3,3 +3,5 @@ create table ods.em_temp_last_pay as (
     from chips_stg.d_date 
     where pay_end_dt<sysdate
 );
+
+commit;

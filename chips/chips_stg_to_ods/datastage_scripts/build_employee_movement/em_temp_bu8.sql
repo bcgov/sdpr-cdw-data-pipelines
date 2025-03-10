@@ -13,3 +13,5 @@ create table ods.em_temp_bu8 as
         on a.p_deptid=b.bu_deptid  
             and a.effdt between b.eff_date and nvl(b.end_date,sysdate)
 ;
+
+commit;

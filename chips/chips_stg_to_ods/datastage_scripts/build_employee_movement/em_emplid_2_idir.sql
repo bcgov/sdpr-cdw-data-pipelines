@@ -11,3 +11,5 @@ create table ods.em_emplid_2_idir as
     from CHIPS_STG.PS_OPRDEFN_BC_TBL 
     where emplid||to_char(lastupddttm,'YYYYMMDDHH24MISS') in (select emplid_key from y1)
 ;
+
+commit;

@@ -15,3 +15,5 @@ create table ods.em_can_noc_tbl as
 
     select * from t2
 ;
+
+commit;

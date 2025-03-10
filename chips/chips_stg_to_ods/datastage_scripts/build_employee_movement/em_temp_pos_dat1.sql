@@ -4,3 +4,5 @@ create table ods.em_temp_pos_dat1 as (
     where eff_status='A' 
     group by position_nbr
 );
+
+commit;
