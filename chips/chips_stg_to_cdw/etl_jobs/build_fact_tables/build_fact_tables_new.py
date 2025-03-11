@@ -20,9 +20,11 @@ logging.basicConfig(
 
 db = OracleDB(conn_str_key_endpoint = odb_conn_str_key_endpoint)
 
-tasks_dir = r'E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_cdw\etl_jobs\build_dim_tables\tasks\\'
+tasks_dir = r'E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_cdw\etl_jobs\build_fact_tables\tasks\\'
 sql_file_enpoints = [
-    r'em_position_d.sql',
+    r'em_fte_burn_f_new.sql',
+    r'em_efp_fte_f_new.sql',
+    r'em_stiip_f_new.sql',
 ]
 for endpoint in sql_file_enpoints:
     file_path = tasks_dir + endpoint
