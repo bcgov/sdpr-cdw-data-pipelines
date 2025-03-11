@@ -22,15 +22,24 @@ logging.basicConfig(
     style='{'
 )
 
-db = OracleDB(conn_str_key_endpoint = odb_conn_str_key_endpoint)
+def main():
+    db = OracleDB(conn_str_key_endpoint = odb_conn_str_key_endpoint)
+    tasks_dir = r'E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_cdw\etl_jobs\build_fact_tables\tasks\\'
+    sql_file_enpoints = [
+        r'em_efp_fte_f_new.sql',
+        r'em_fte_burn_f_new.sql',
+        r'em_stiip_f_new.sql',
+    ]
+    for endpoint in sql_file_enpoints:
+        file_path = tasks_dir + endpoint
+        logger.info(f'executing: {endpoint}')
+        db.run_sql_script(sql_file_path=file_path)
 
-tasks_dir = r'E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_cdw\etl_jobs\build_fact_tables\tasks\\'
-sql_file_enpoints = [
-    r'em_efp_fte_f_new.sql',
-    r'em_fte_burn_f_new.sql',
-    r'em_stiip_f_new.sql',
-]
-for endpoint in sql_file_enpoints:
-    file_path = tasks_dir + endpoint
-    logger.info(f'executing: {endpoint}')
-    db.run_sql_script(sql_file_path=file_path)
+if __name__ == "__main__":
+    try:
+        main()
+        logging.info('finished')
+        sys.exit(0)
+    except Exception:
+        logging.exception('Got exception on main handler')
+        sys.exit(1)
