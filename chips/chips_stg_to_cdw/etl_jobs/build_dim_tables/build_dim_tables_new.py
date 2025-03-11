@@ -2,15 +2,19 @@ import logging
 import sys
 from dotenv import load_dotenv
 import os 
+from pathlib import Path
 load_dotenv()
 base_dir = os.getenv('MAIN_BASE_DIR')
 odb_conn_str_key_endpoint = os.getenv('ORACLE_CONN_STRING_KEY')
 sys.path.append(base_dir)
 from utils.oracle_db import OracleDB
 
+this_dir = os.path.dirname(os.path.realpath(__file__))
+this_file = Path(__file__).stem
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-    # filename=fr'{this_dir}\data_extract.log',
+    filename=fr'{this_dir}\{this_file}.log',
     filemode='w',
     level=logging.DEBUG, 
     format="{levelname} ({asctime}): {message}", 
