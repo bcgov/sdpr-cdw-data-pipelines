@@ -1,3 +1,6 @@
+with
+
+src_data as (
 select
     jc.setid||jc.jobcode jobcode_bk,
     jc.setid,
@@ -65,12 +68,17 @@ select
 	    null
    ) incl_excl_descr
 from chips_stg.ps_jobcode_tbl jc
-where jc.effdt >= (
-    select nvl(max(to_date(x2.effdt, 'yyyy-mm-dd hh24:mi:ss')),
-        to_date('19400101', 'yyyymmdd'))
-    from cdw.em_job_class_d x2
-    where jc.setid = x2.setid
-        and jc.jobcode = x2.jobcode
-)
 order by jc.setid, jc.jobcode, jc.effdt
+),
+
+-- add a column for the max(effdt) for each jobcode_bk
+src_with_max_effdt as (
+    select s.*, max(effdt) over (partition by jobcode_bk) max_effdt
+    from src_data s
+)
+
+-- select only most recent records for each job code
+select *
+from src_with_max_effdt
+where effdt = max_effdt
 ;
