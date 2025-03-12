@@ -145,9 +145,9 @@ class DataExtractor:
 
     def delete_drive(self, drive):
         """
-        deletes drive
+        force deletes drive
         """
-        cmd = fr'net use {drive} /del'
+        cmd = fr'net use {drive} /del /y'
         logger.debug(cmd)
         subprocess.call(cmd, shell=True)
 
