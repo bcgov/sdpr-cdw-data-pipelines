@@ -1,9 +1,3 @@
-with 
-
-min_pay_end_date_to_load as (
-    select current_date - 28 from dual
-)
-
 select
     appointment_status,
     LEAVE_END_DT_SK,
@@ -87,7 +81,6 @@ from ( -- B
                 AND B.ERNCD IN ('SIZ','SIX','SIH','SIP','SIS','S57', 'ESL')   --  'SIL'
                 AND A.COMPANY = 'GOV'
                 AND A.PAYGROUP IN ('STD','OBL','LBM')
-                and a.pay_end_dt >= (select * from min_pay_end_date_to_load)
         group by
             A.earns_begin_dt, 
             A.earns_end_dt, 
