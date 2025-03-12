@@ -1,8 +1,8 @@
-with
+-- with
 
-min_pay_end_date_to_load as (
-    select current_date - 70 from dual
-)
+-- min_pay_end_date_to_load as (
+--     select current_date - 70 from dual
+-- )
 
 SELECT
     f.emplid,
@@ -39,7 +39,7 @@ where f.emplid = j.emplid
             and j3.empl_rcd = j.empl_rcd
             and j3.effdt = j.effdt
     )
-    and f.pay_end_dt >= (select * from min_pay_end_date_to_load)
+    -- and f.pay_end_dt >= (select * from min_pay_end_date_to_load)
     AND sc.RECNAME = 'DEPT_TBL'  
     AND sc.SETCNTRLVALUE = F.business_unit
     AND sc2.RECNAME = 'JOBCODE_TBL'  
