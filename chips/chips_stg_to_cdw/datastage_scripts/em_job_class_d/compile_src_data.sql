@@ -92,7 +92,12 @@ select
     union_cd,
     std_hours,
     std_hrs_frequency,
-    job_function
+    job_function,
+    job_func_descr,
+    emp_group,
+    emp_grp_descr,
+    incl_excl,
+    incl_excl_descr
 from src_with_max_effdt
 where effdt = max_effdt
 ;

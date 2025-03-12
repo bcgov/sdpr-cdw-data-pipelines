@@ -1,34 +1,34 @@
--- CREATE UNIQUE INDEX cdw.IJOB_CLASS_D_A1 ON cdw.EM_JOB_CLASS_D (JOBCLASS_SID)
---     tablespace CDW_INDX pctfree 10 initrans 2 maxtrans 255
---     storage (initial 10M  minextents 1  maxextents unlimited)
---     nologging compute statistics
--- ;
--- commit;
-
-CREATE INDEX IJOB_CLASS_D_A2 ON cdw.EM_JOB_CLASS_D (JOBCODE_BK)
-    tablespace CDW_INDX pctfree 10 initrans 2 maxtrans 255
-    storage (initial 10M minextents 1 maxextents unlimited)
+create unique index cdw.ijob_class_d_a1 on cdw.em_job_class_d (jobclass_sid)
+    tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
+    storage (initial 10m  minextents 1  maxextents unlimited)
     nologging compute statistics
 ;
 commit;
 
-CREATE BITMAP INDEX IJOB_CLASS_D_A3 ON cdw.EM_JOB_CLASS_D (EMP_GROUP)
-    tablespace CDW_INDX pctfree 10 initrans 2 maxtrans 255
-    storage (initial 10M minextents 1 maxextents unlimited)
+create index cdw.ijob_class_d_a2 on cdw.em_job_class_d (jobcode_bk)
+    tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
+    storage (initial 10m minextents 1 maxextents unlimited)
     nologging compute statistics
 ;
 commit;
 
-CREATE BITMAP INDEX IJOB_CLASS_D_A4 ON cdw.EM_JOB_CLASS_D (INCL_EXCL)
-    tablespace CDW_INDX pctfree 10 initrans 2 maxtrans 255
-    storage (initial 10M  minextents 1 maxextents unlimited)
+create bitmap index cdw.ijob_class_d_a3 on cdw.em_job_class_d (emp_group)
+    tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
+    storage (initial 10m minextents 1 maxextents unlimited)
     nologging compute statistics
 ;
 commit;
 
-CREATE BITMAP INDEX IJOB_CLASS_D_A5 ON cdw.EM_JOB_CLASS_D (JOB_FUNCTION)
-  tablespace CDW_INDX pctfree 10 initrans 2 maxtrans 255
-  storage (initial 10M  minextents 1 maxextents unlimited)
+create bitmap index cdw.ijob_class_d_a4 on cdw.em_job_class_d (incl_excl)
+    tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
+    storage (initial 10m  minextents 1 maxextents unlimited)
+    nologging compute statistics
+;
+commit;
+
+create bitmap index cdw.ijob_class_d_a5 on cdw.em_job_class_d (job_function)
+  tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
+  storage (initial 10m  minextents 1 maxextents unlimited)
   nologging compute statistics
 ;
 commit;
