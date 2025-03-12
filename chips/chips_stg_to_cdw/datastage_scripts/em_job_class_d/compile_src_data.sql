@@ -78,7 +78,21 @@ src_with_max_effdt as (
 )
 
 -- select only most recent records for each job code
-select *
+select 
+    jobcode_bk,
+    setid,
+    jobcode,
+    effdt,
+    jc_eff_status,
+    jc_descr,
+    jc_descrshort,
+    sal_admin_plan,
+    grade,
+    step,
+    union_cd,
+    std_hours,
+    std_hrs_frequency,
+    job_function
 from src_with_max_effdt
 where effdt = max_effdt
 ;
