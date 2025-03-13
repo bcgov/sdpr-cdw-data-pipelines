@@ -1,10 +1,10 @@
 select
     appointment_status,
-    LEAVE_END_DT_SK,
-    LEAVE_END_DT,
-    LEAVE_BEGIN_DT_SK,
+    leave_end_dt_sk,
+    leave_end_dt,
+    leave_begin_dt_sk,
     location_bk,
-    PAY_END_DT_SK,
+    pay_end_dt_sk,
     pay_end_dt,
     empl_status,
     position_nbr,
@@ -12,11 +12,11 @@ select
     emplid,
     jobcode_bk,
     hourly_rt,
-    LEAVE_HOURS,
-    LEAVECOST,
-    PAIDCOST,
+    leave_hours,
+    leavecost,
+    paidcost,
     empls,
-    LEAVECODE
+    leavecode
 from ( -- B
     SELECT
         A.emplid,
@@ -94,25 +94,25 @@ from ( -- B
             A.hourly_rt, 
             B.erncd
     ) A,
-    chips_stg.PS_JOB C,
-    chips_stg.PS_SET_CNTRL_REC sc,
-    chips_stg.PS_SET_CNTRL_REC sc2
-    WHERE
-        A.EMPLid = C.EMPLID
-        AND A.EMPL_RCD = C.EMPL_RCD
-        AND C.EFFDT = (
-            SELECT MAX(C1.EFFDT)
-            FROM chips_stg.PS_JOB C1
-            WHERE C1.EMPLID = C.EMPLID
-                AND C1.EMPL_RCD = C.EMPL_RCD
-                AND C1.EFFDT <= A.EARNS_END_DT
+    chips_stg.ps_job c,
+    chips_stg.ps_set_cntrl_rec sc,
+    chips_stg.ps_set_cntrl_rec sc2
+    where
+        a.emplid = c.emplid
+        and a.empl_rcd = c.empl_rcd
+        and c.effdt = (
+            select max(c1.effdt)
+            from chips_stg.ps_job c1
+            where c1.emplid = c.emplid
+                and c1.empl_rcd = c.empl_rcd
+                and c1.effdt <= a.earns_end_dt
         )
-        AND C.EFFSEQ = (
-            SELECT MAX(C2.EFFSEQ)
-            FROM chips_stg.PS_JOB C2
-            WHERE C2.EMPLID = C.EMPLID
-                AND C2.EMPL_RCD = C.EMPL_RCD
-                AND C2.EFFDT = C.EFFDT
+        and c.effseq = (
+            select max(c2.effseq)
+            from chips_stg.ps_job c2
+            where c2.emplid = c.emplid
+                and c2.empl_rcd = c.empl_rcd
+                and c2.effdt = c.effdt
         )
         AND sc.RECNAME = 'DEPT_TBL' AND sc.SETCNTRLVALUE = A.business_unit
         AND sc2.RECNAME = 'JOBCODE_TBL' AND sc2.SETCNTRLVALUE = A.business_unit
