@@ -1,71 +1,101 @@
-truncate table cdw.em_position_d;
+truncate table cdw.em_position_d; commit;
+
+drop index cdw.iposition_d_a1;
+drop index cdw.iposition_d_a2;
+drop index cdw.iposition_d_a3;
+
+drop sequence cdw.em_position_d_seq; commit;
+
+create sequence cdw.em_position_d_seq; commit;
 
 insert into cdw.em_position_d
-SELECT /*+RULE*/
-    -- case 
-    --     when NOT regexp_like(p.position_nbr, '[^[:digit:]]') then to_number(p.position_nbr)
-    --     end position_sid,
-    p.position_nbr,
-    p.descr AS position_descr,
-    p.eff_status,
-    p.descrshort,
-    p.budgeted_posn,
-    p.key_position,
-    p.reports_to,
-    p.report_dotted_line,
-    TRIM(p.can_noc_cd || '-' || p.tgb_can_noc_sub_cd) AS noc_sub_cd,
-    subnoc_tbl.SUB_descr subcode,
-    p.can_noc_cd,
-    noc_tbl.NOC_DESCR noc,
-    sysdate udt_date,
-    sysdate eff_date,
-    sysdate end_date,
-    'Y' curr_ind
-FROM chips_stg.ps_position_data p
-LEFT JOIN (
-    SELECT DISTINCT
-        cn.can_noc_cd,
-        cn.descr AS noc,
-        n.tgb_can_noc_sub_cd,
-        n.descr AS sub_descr
-    FROM chips_stg.ps_tgb_cnocsub_tbl n
-    JOIN chips_stg.ps_can_noc_tbl cn
-        ON n.can_noc_cd = cn.can_noc_cd
-    WHERE cn.effdt = (
-        SELECT MAX(cn2.effdt)
-        FROM chips_stg.ps_can_noc_tbl cn2
-        WHERE cn2.can_noc_cd = cn.can_noc_cd
-            AND cn2.effdt <= SYSDATE
+    with
+    src_data as (
+        select /*+rule*/
+            p.position_nbr,
+            p.descr as position_descr,
+            p.eff_status,
+            p.descrshort,
+            p.budgeted_posn,
+            p.key_position,
+            p.reports_to,
+            p.report_dotted_line,
+            trim(p.can_noc_cd || '-' || p.tgb_can_noc_sub_cd) as noc_sub_cd,
+            subnoc_tbl.sub_descr subcode,
+            p.can_noc_cd,
+            noc_tbl.noc_descr noc,
+            p.effdt eff_date
+        from chips_stg.ps_position_data p
+        left join (
+            select distinct
+                cn.can_noc_cd,
+                cn.descr as noc,
+                n.tgb_can_noc_sub_cd,
+                n.descr as sub_descr
+            from chips_stg.ps_tgb_cnocsub_tbl n
+            join chips_stg.ps_can_noc_tbl cn
+                on n.can_noc_cd = cn.can_noc_cd
+            where cn.effdt = (
+                select max(cn2.effdt)
+                from chips_stg.ps_can_noc_tbl cn2
+                where cn2.can_noc_cd = cn.can_noc_cd
+                    and cn2.effdt <= sysdate
+            )
+            and n.effdt = (
+                select max(n2.effdt)
+                from chips_stg.ps_tgb_cnocsub_tbl n2
+                where n2.can_noc_cd = cn.can_noc_cd
+                    and n.tgb_can_noc_sub_cd = n2.tgb_can_noc_sub_cd
+                    and n2.effdt <= sysdate
+            )
+        ) subnoc_tbl
+            on p.can_noc_cd = subnoc_tbl.can_noc_cd
+            and p.tgb_can_noc_sub_cd = subnoc_tbl.tgb_can_noc_sub_cd
+        left join (
+            select distinct
+                cn.can_noc_cd,
+                cn.descr as noc_descr
+            from chips_stg.ps_can_noc_tbl cn
+            where cn.effdt = (
+                select max(cn2.effdt)
+                from chips_stg.ps_can_noc_tbl cn2
+                where cn2.can_noc_cd = cn.can_noc_cd
+                    and cn2.effdt <= sysdate
+            )
+        ) noc_tbl
+            on p.can_noc_cd = noc_tbl.can_noc_cd
+        where p.effdt = (
+            select max(p2.effdt)
+            from chips_stg.ps_position_data p2
+            where p2.position_nbr = p.position_nbr
+                and p2.effdt <= sysdate
+        )
     )
-    AND n.effdt = (
-        SELECT MAX(n2.effdt)
-        FROM chips_stg.ps_tgb_cnocsub_tbl n2
-        WHERE n2.can_noc_cd = cn.can_noc_cd
-            AND n.tgb_can_noc_sub_cd = n2.tgb_can_noc_sub_cd
-            AND n2.effdt <= SYSDATE
-    )
-) subnoc_tbl
-    ON p.can_noc_cd = subnoc_tbl.can_noc_cd
-    AND p.tgb_can_noc_sub_cd = subnoc_tbl.tgb_can_noc_sub_cd
-LEFT JOIN (
-    SELECT DISTINCT
-        cn.can_noc_cd,
-        cn.descr AS noc_descr
-    FROM chips_stg.ps_can_noc_tbl cn
-    WHERE cn.effdt = (
-        SELECT MAX(cn2.effdt)
-        FROM chips_stg.ps_can_noc_tbl cn2
-        WHERE cn2.can_noc_cd = cn.can_noc_cd
-            AND cn2.effdt <= SYSDATE
-    )
-) noc_tbl
-    ON p.can_noc_cd = noc_tbl.can_noc_cd
-WHERE p.effdt = (
-    SELECT MAX(p2.effdt)
-    FROM chips_stg.ps_position_data p2
-    WHERE p2.position_nbr = p.position_nbr
-        AND p2.effdt <= SYSDATE
-)
-;
+    select 
+        cdw.em_position_d_seq.nextval position_sid, 
+        s.*,
+        null end_date,
+        current_date udt_date,
+        'Y' curr_ind
+    from src_data s
+; commit;
 
-commit;
+create index cdw.iposition_d_a1 on cdw.em_position_d (position_nbr)
+     tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
+     storage  (initial 10m minextents 1 maxextents unlimited)
+     nologging compute statistics
+; commit;
+
+
+create bitmap index cdw.iposition_d_a2 on cdw.em_position_d (can_noc_cd)
+     tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
+     storage  (initial 10m minextents 1 maxextents unlimited)
+     nologging compute statistics
+; commit;
+
+
+create bitmap index cdw.iposition_d_a3 on cdw.em_position_d (noc_sub_cd)
+     tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
+     storage (initial 10m minextents 1 maxextents unlimited)
+     nologging compute statistics
+; commit;
