@@ -14,7 +14,7 @@ insert into cdw.em_bu_security_d (deptid, bu_bk, bu_deptid, hier_level, bu_sid)
             BU_BK,
             BU_DEPTID,
             1 AS HIER_LEVEL
-        FROM "CDW"."OR_BUSINESS_UNIT_D_NEW"
+        FROM "CDW"."OR_BUSINESS_UNIT_D"
         WHERE SETID = 'ST031'
     ),
     l2 as (
@@ -23,7 +23,7 @@ insert into cdw.em_bu_security_d (deptid, bu_bk, bu_deptid, hier_level, bu_sid)
             BU_BK,
             BU_DEPTID,
             2 AS HIER_LEVEL
-        FROM "CDW"."OR_BUSINESS_UNIT_D_NEW"
+        FROM "CDW"."OR_BUSINESS_UNIT_D"
         WHERE SETID = 'ST031'
             AND LEVEL2_DEPTID IS NOT NULL
     ),
@@ -33,7 +33,7 @@ insert into cdw.em_bu_security_d (deptid, bu_bk, bu_deptid, hier_level, bu_sid)
             BU_BK,
             BU_DEPTID,
             3 AS HIER_LEVEL
-        FROM "CDW"."OR_BUSINESS_UNIT_D_NEW"
+        FROM "CDW"."OR_BUSINESS_UNIT_D"
         WHERE SETID = 'ST031'
             AND LEVEL3_DEPTID IS NOT NULL
     ),
@@ -43,7 +43,7 @@ insert into cdw.em_bu_security_d (deptid, bu_bk, bu_deptid, hier_level, bu_sid)
             BU_BK,
             BU_DEPTID,
             4 AS HIER_LEVEL
-        FROM "CDW"."OR_BUSINESS_UNIT_D_NEW"
+        FROM "CDW"."OR_BUSINESS_UNIT_D"
         WHERE SETID = 'ST031'
             AND LEVEL4_DEPTID IS NOT NULL
     ),
@@ -53,7 +53,7 @@ insert into cdw.em_bu_security_d (deptid, bu_bk, bu_deptid, hier_level, bu_sid)
             BU_BK,
             BU_DEPTID,
             5 AS HIER_LEVEL
-        FROM "CDW"."OR_BUSINESS_UNIT_D_NEW"
+        FROM "CDW"."OR_BUSINESS_UNIT_D"
         WHERE SETID = 'ST031'
             AND LEVEL5_DEPTID IS NOT NULL
     ),
@@ -63,7 +63,7 @@ insert into cdw.em_bu_security_d (deptid, bu_bk, bu_deptid, hier_level, bu_sid)
             BU_BK,
             BU_DEPTID,
             6 AS HIER_LEVEL
-        FROM "CDW"."OR_BUSINESS_UNIT_D_NEW"
+        FROM "CDW"."OR_BUSINESS_UNIT_D"
         WHERE SETID = 'ST031'
             AND LEVEL6_DEPTID IS NOT NULL
     ),
@@ -73,7 +73,7 @@ insert into cdw.em_bu_security_d (deptid, bu_bk, bu_deptid, hier_level, bu_sid)
             BU_BK,
             BU_DEPTID,
             7 AS HIER_LEVEL
-        FROM "CDW"."OR_BUSINESS_UNIT_D_NEW"
+        FROM "CDW"."OR_BUSINESS_UNIT_D"
         WHERE SETID = 'ST031'
             AND LEVEL7_DEPTID IS NOT NULL
     ),
@@ -96,4 +96,6 @@ insert into cdw.em_bu_security_d (deptid, bu_bk, bu_deptid, hier_level, bu_sid)
         s.*,
         cdw.em_bu_security_d_seq.nextval bu_sid
     from src_data s
-; commit;
+; 
+
+commit;

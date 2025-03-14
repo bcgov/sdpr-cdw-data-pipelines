@@ -8,6 +8,7 @@ base_dir = os.getenv('MAIN_BASE_DIR')
 odb_conn_str_key_endpoint = os.getenv('ORACLE_CONN_STRING_KEY')
 sys.path.append(base_dir)
 from utils.oracle_db import OracleDB
+from tasks.stiip_security_requirement.stiip_security_requirement_stg import build_stiip_security_requirement_stg
 
 this_dir = os.path.dirname(os.path.realpath(__file__))
 this_file = Path(__file__).stem
@@ -22,24 +23,32 @@ logging.basicConfig(
     style='{'
 )
 
+tasks_dir = r'E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_cdw\etl_jobs\build_dim_tables\tasks\\'
+
+def run_sql_script(db: OracleDB, sql_script_endpoint: str):
+    file_path = tasks_dir + sql_script_endpoint
+    logger.info(f'executing: {sql_script_endpoint}')
+    db.run_sql_script(sql_file_path=file_path)
+    logger.info(f'finished executing: {sql_script_endpoint}')
+
 def main():
     db = OracleDB(conn_str_key_endpoint = odb_conn_str_key_endpoint)
-    tasks_dir = r'E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_cdw\etl_jobs\build_dim_tables\tasks\\'
-    sql_file_enpoints = [
-        r'em_appointment_status_d.sql',
-        r'em_employee_d.sql',
-        r'em_employee_status_d.sql',
-        r'em_job_class_d.sql',
-        r'em_paycode_d.sql',
-        r'em_position_d.sql',
 
-        r'or_business_unit_d.sql',
-        r'em_bu_security_d.sql', # must go after or_business_unit_d
-    ]
-    for endpoint in sql_file_enpoints:
-        file_path = tasks_dir + endpoint
-        logger.info(f'executing: {endpoint}')
-        db.run_sql_script(sql_file_path=file_path)
+    # have no local dependencies
+    run_sql_script(db, r'em_appointment_status_d.sql')
+    run_sql_script(db, r'em_employee_d.sql')
+    run_sql_script(db, r'em_employee_status_d.sql')
+    run_sql_script(db, r'em_job_class_d.sql')
+    run_sql_script(db, r'em_paycode_d.sql')
+    run_sql_script(db, r'em_position_d.sql')
+    run_sql_script(db, r'or_business_unit_d.sql')
+    run_sql_script(db, r'or_location_d.sql')
+
+    # have local dependencies
+    build_stiip_security_requirement_stg() # dependencies: stiip_security_requirement.csv
+    run_sql_script(db, r'stiip_security_requirement\stiip_security_requirement.sql') # dependencies: chips_stg.stiip_security_requirement_stg
+    run_sql_script(db, r'em_userid_to_emplid_xref_d.sql') # dependencies: chips_stg.stiip_security_requirement
+    run_sql_script(db, r'em_bu_security_d.sql') # dependencies: cdw.or_business_unit_d
 
 if __name__ == "__main__":
     try:

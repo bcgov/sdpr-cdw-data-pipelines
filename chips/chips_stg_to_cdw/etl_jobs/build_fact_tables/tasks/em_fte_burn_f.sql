@@ -68,4 +68,74 @@ insert into cdw.em_fte_burn_f
         and s.pay_end_dt_sk is not null
 ;
 
+drop index cdw.ifte_burn_f_a1;
+
+create bitmap index cdw.ifte_burn_f_a1  on cdw.em_fte_burn_f (appointment_status_sid)
+tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255
+storage (initial 10m  minextents 1  maxextents unlimited)
+nologging compute statistics;
+
+drop index cdw.ifte_burn_f_a2;
+
+create bitmap index cdw.ifte_burn_f_a2  on cdw.em_fte_burn_f (bu_sid)
+tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255
+storage  (initial 10m  minextents 1  maxextents unlimited)
+nologging compute statistics;
+
+drop index cdw.ifte_burn_f_a3;
+
+create bitmap index cdw.ifte_burn_f_a3  on cdw.em_fte_burn_f (empl_status_sid)
+tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255
+storage  (initial 10m  minextents 1  maxextents unlimited)
+nologging compute statistics;
+
+drop index cdw.ifte_burn_f_a4;
+
+create bitmap index cdw.ifte_burn_f_a4  on cdw.em_fte_burn_f (job_class_sid)
+tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255
+storage  (initial 10m  minextents 1  maxextents unlimited)
+nologging compute statistics;
+
+drop index cdw.ifte_burn_f_a5;
+
+create bitmap index cdw.ifte_burn_f_a5  on cdw.em_fte_burn_f (location_sid)
+tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255
+storage  (initial 10m  minextents 1  maxextents unlimited)
+nologging compute statistics;
+
+drop index cdw.ifte_burn_f_a6;
+
+create bitmap index cdw.ifte_burn_f_a6  on cdw.em_fte_burn_f (pay_end_dt_sk)
+tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255
+storage  (initial 10m  minextents 1  maxextents unlimited)
+nologging compute statistics;
+
+drop index cdw.ifte_burn_f_a7;
+
+create bitmap index cdw.ifte_burn_f_a7  on cdw.em_fte_burn_f (position_sid)
+tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255
+storage  (initial 10m  minextents 1  maxextents unlimited)
+nologging compute statistics;
+
+drop index cdw.ifte_burn_f_a8;
+
+create bitmap index cdw.ifte_burn_f_a8  on cdw.em_fte_burn_f (bu_sid,pay_end_dt_sk)
+tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255
+storage  (initial 10m  minextents 1  maxextents unlimited)
+nologging compute statistics;
+
+drop index cdw.ifte_burn_f_a9;
+
+create  index cdw.ifte_burn_f_a9  on cdw.em_fte_burn_f (emplid)
+tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255
+storage  (initial 10m  minextents 1  maxextents unlimited)
+nologging compute statistics;
+
+drop index cdw.ifte_burn_f_a10;
+
+create  index cdw.ifte_burn_f_a10  on cdw.em_fte_burn_f (empl_sid)
+tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255
+storage  (initial 10m  minextents 1  maxextents unlimited)
+nologging compute statistics;
+
 commit;
