@@ -22,7 +22,7 @@ logging.basicConfig(
     style='{'
 )
 
-tasks_dir = r'E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_cdw\etl_jobs\build_fact_tables\tasks\\'
+tasks_dir = fr'{this_dir}\tasks\\'
 
 def run_sql_script(db: OracleDB, sql_script_endpoint: str):
     file_path = tasks_dir + sql_script_endpoint
@@ -34,13 +34,13 @@ def main():
     db = OracleDB(conn_str_key_endpoint = odb_conn_str_key_endpoint)
     run_sql_script(db, r'em_efp_fte_f.sql')
     run_sql_script(db, r'em_stiip_f.sql')
-    # run_sql_script(db, r'em_fte_burn_f.sql')
+    run_sql_script(db, r'em_fte_burn_f.sql')
 
 if __name__ == "__main__":
     try:
         main()
         logging.info('finished')
-        sys.exit(0)
     except Exception:
         logging.exception('Got exception on main handler')
         sys.exit(1)
+    sys.exit(0)
