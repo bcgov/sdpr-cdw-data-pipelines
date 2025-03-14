@@ -22,19 +22,19 @@ logging.basicConfig(
     style='{'
 )
 
+tasks_dir = r'E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_cdw\etl_jobs\build_fact_tables\tasks\\'
+
+def run_sql_script(db: OracleDB, sql_script_endpoint: str):
+    file_path = tasks_dir + sql_script_endpoint
+    logger.info(f'executing: {sql_script_endpoint}')
+    db.run_sql_script(sql_file_path=file_path)
+    logger.info(f'finished executing: {sql_script_endpoint}')
+
 def main():
     db = OracleDB(conn_str_key_endpoint = odb_conn_str_key_endpoint)
-    tasks_dir = r'E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_cdw\etl_jobs\build_fact_tables\tasks\\'
-    sql_file_enpoints = [
-        r'em_efp_fte_f.sql',
-        r'em_stiip_f.sql',
-        r'em_fte_burn_f.sql',
-    ]
-    for endpoint in sql_file_enpoints:
-        file_path = tasks_dir + endpoint
-        logger.info(f'executing: {endpoint}')
-        db.run_sql_script(sql_file_path=file_path)
-        logger.info(f'finished executing: {endpoint}')
+    run_sql_script(db, r'em_efp_fte_f.sql')
+    run_sql_script(db, r'em_stiip_f.sql')
+    # run_sql_script(db, r'em_fte_burn_f.sql')
 
 if __name__ == "__main__":
     try:
