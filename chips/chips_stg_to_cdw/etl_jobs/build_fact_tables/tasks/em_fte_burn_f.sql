@@ -64,8 +64,8 @@ insert into cdw.em_fte_burn_f
     left join cdw.em_appointment_status_d apt on s.appointment_status = apt.appointment_status
     left join cdw.em_employee_status_d es on s.empl_status = es.empl_status
     left join cdw.or_location_d loc on s.location_bk = loc.setid_loc
-    where emplid is not null
-        and pay_end_dt_sk is not null
+    where s.emplid is not null
+        and s.pay_end_dt_sk is not null
 ;
 
 commit;
