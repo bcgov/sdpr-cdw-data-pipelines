@@ -1,5 +1,5 @@
 import oracledb
-from utils.windows_registry import WindowsRegistry
+from utils.win_reg_for_ora import WinRegForOra
 import pandas as pd
 import polars as pl
 import logging
@@ -53,7 +53,7 @@ class OracleDB:
         Args:
             conn_str_key_endpoint (str): The endpoint for retrieving the Oracle connection string from the registry.
         """
-        reg = WindowsRegistry()
+        reg = WinRegForOra()
         db_credentials = reg.get_oracle_conn_dict(conn_str_key_endpoint)
         self.user = db_credentials["user"]
         pwd = db_credentials["pwd"]
