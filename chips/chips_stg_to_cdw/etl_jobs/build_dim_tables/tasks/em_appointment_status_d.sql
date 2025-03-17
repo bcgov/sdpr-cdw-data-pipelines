@@ -1,9 +1,5 @@
 truncate table cdw.em_appointment_status_d; commit;
 
--- drop sequence cdw.em_appointment_status_d_seq; commit;
-
--- create sequence cdw.em_appointment_status_d_seq; commit;
-
 insert into cdw.em_appointment_status_d
     with
     src_data as (
