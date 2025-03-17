@@ -1,8 +1,4 @@
-truncate table cdw.em_employee_status_d; commit;
-
-drop sequence cdw.em_employee_status_d_seq; commit;
-
-create sequence cdw.em_employee_status_d_seq; commit;
+truncate table cdw.em_employee_status_d;
 
 insert into cdw.em_employee_status_d
     with
@@ -33,6 +29,10 @@ insert into cdw.em_employee_status_d
                     and x2.effdt <= sysdate
             )
     )
-    select s.*, cdw.em_employee_status_d_seq.nextval empl_status_sid
+    select s.*, 
+        row_number() over (order by effdt) empl_status_sid
     from src_data s
-; commit;
+    order by empl_status_sid
+; 
+
+commit;

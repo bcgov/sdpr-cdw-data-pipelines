@@ -1,13 +1,6 @@
 alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss';
 
-truncate table cdw.em_employee_d; commit;
-
-drop index cdw.iemployee_d_a1; commit;
-drop index cdw.iemployee_d_a2; commit;
-
-drop sequence cdw.em_employee_d_seq; commit;
-
-create sequence cdw.em_employee_d_seq; commit;
+truncate table cdw.em_employee_d; 
 
 insert into cdw.em_employee_d (
     emplid,
@@ -201,9 +194,12 @@ insert into cdw.em_employee_d (
     )
     select  
         s.*,
-        cdw.em_employee_d_seq.nextval empl_sid
+        row_number() over (order by emplid) empl_sid
     from src_data s
-; commit;
+    order by empl_sid
+;
+
+drop index cdw.iemployee_d_a1;
 
 create unique index cdw.iemployee_d_a1 on cdw.em_employee_d (emplid)
     tablespace cdw_indx
@@ -212,7 +208,9 @@ create unique index cdw.iemployee_d_a1 on cdw.em_employee_d (emplid)
     maxtrans 255
     storage (initial 10m minextents 1 maxextents unlimited)
     nologging compute statistics
-; commit;
+;
+
+drop index cdw.iemployee_d_a2;
 
 create index cdw.iemployee_d_a2 on cdw.em_employee_d (name)
     tablespace cdw_indx
@@ -221,4 +219,6 @@ create index cdw.iemployee_d_a2 on cdw.em_employee_d (name)
     maxtrans 255
     storage  (initial 10m  minextents 1 maxextents unlimited)
     nologging compute statistics
-; commit;
+; 
+
+commit;

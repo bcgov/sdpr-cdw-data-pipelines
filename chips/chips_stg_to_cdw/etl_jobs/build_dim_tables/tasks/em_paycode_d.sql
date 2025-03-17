@@ -1,8 +1,4 @@
-truncate table cdw.em_paycode_d; commit;
-
-drop sequence cdw.em_paycode_d_seq; commit;
-
-create sequence cdw.em_paycode_d_seq; commit;
+truncate table cdw.em_paycode_d; 
 
 insert into cdw.em_paycode_d
     with
@@ -16,6 +12,8 @@ insert into cdw.em_paycode_d
             reduces_hours_worked
         from chips_stg.paycodes
     )
-    select cdw.em_paycode_d_seq.nextval paycode_sid, s.*
+    select row_number() over (order by pay_cd) paycode_sid, s.*
     from src_data s
-; commit;
+; 
+
+commit;

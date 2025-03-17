@@ -2,10 +2,6 @@ alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss';
 
 truncate table cdw.em_bu_security_d; commit;
 
-drop sequence cdw.em_bu_security_d_seq; commit;
-
-create sequence cdw.em_bu_security_d_seq; commit;
-
 insert into cdw.em_bu_security_d (deptid, bu_bk, bu_deptid, hier_level, bu_sid)
     with
     l1 as (
@@ -94,8 +90,9 @@ insert into cdw.em_bu_security_d (deptid, bu_bk, bu_deptid, hier_level, bu_sid)
     )
     select  
         s.*,
-        cdw.em_bu_security_d_seq.nextval bu_sid
+        row_number() over (order by bu_bk, hier_level) bu_sid
     from src_data s
+    order by bu_sid desc
 ; 
 
 commit;

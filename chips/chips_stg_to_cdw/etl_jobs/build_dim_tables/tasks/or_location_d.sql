@@ -1,9 +1,5 @@
 truncate table cdw.or_location_d;
 
-drop sequence cdw.or_location_d_seq; commit;
-
-create sequence cdw.or_location_d_seq; commit;
-
 insert into cdw.or_location_d
     with
     src_data as (
@@ -59,7 +55,7 @@ insert into cdw.or_location_d
             )
     )
     select 
-        cdw.or_location_d_seq.nextval location_sid, 
+        row_number() over (order by setid_loc) location_sid, 
         s.*,
         'Y' curr_ind,
         current_date upt_dt,
@@ -70,7 +66,7 @@ insert into cdw.or_location_d
 
 drop index cdw.ilocation_d_a1;
 
-create index cdw.ilocation_d_a1 on cdw.or_location_d (location)
+create index cdw.ilocation_d_a1 on cdw.or_location_d (city)
 tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255
 storage  ( initial 10m  minextents 1  maxextents unlimited)
 nologging compute statistics;

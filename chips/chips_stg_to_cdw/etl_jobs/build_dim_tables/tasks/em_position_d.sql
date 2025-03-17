@@ -57,10 +57,9 @@ insert into cdw.em_position_d
             )
         ) noc_tbl
             on p.can_noc_cd = noc_tbl.can_noc_cd
-        order by eff_date
     )
     select 
-        rownum position_sid, 
+        row_number() over (order by eff_date, position_nbr) position_sid, 
         s.*,
         current_date udt_date,
         case

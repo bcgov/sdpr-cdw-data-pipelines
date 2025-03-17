@@ -1,16 +1,6 @@
 alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss';
 
-truncate table cdw.em_job_class_d; commit;
-
-drop sequence cdw.em_job_class_d_seq; commit;
-
-create sequence cdw.em_job_class_d_seq; commit;
-
-drop index cdw.ijob_class_d_a1; commit;
-drop index cdw.ijob_class_d_a2; commit;
-drop index cdw.ijob_class_d_a3; commit;
-drop index cdw.ijob_class_d_a4; commit;
-drop index cdw.ijob_class_d_a5; commit;
+truncate table cdw.em_job_class_d;
 
 insert into cdw.em_job_class_d
     with
@@ -115,39 +105,52 @@ insert into cdw.em_job_class_d
         where effdt = max_effdt
     )
     select 
-        cdw.em_job_class_d_seq.nextval jobclass_sid, 
+        row_number() over (order by effdt) jobclass_sid, 
         l.*,
         null eff_end_dt,
         'Y' curr_ind
     from load_data l
-; commit;
+;
+
+
+drop index cdw.ijob_class_d_a1;
 
 create unique index cdw.ijob_class_d_a1 on cdw.em_job_class_d (jobclass_sid)
     tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
     storage (initial 10m  minextents 1  maxextents unlimited)
     nologging compute statistics
-; commit;
+;
+
+drop index cdw.ijob_class_d_a2;
 
 create index cdw.ijob_class_d_a2 on cdw.em_job_class_d (jobcode_bk)
     tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
     storage (initial 10m minextents 1 maxextents unlimited)
     nologging compute statistics
-; commit;
+;
+
+drop index cdw.ijob_class_d_a3;
 
 create bitmap index cdw.ijob_class_d_a3 on cdw.em_job_class_d (emp_group)
     tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
     storage (initial 10m minextents 1 maxextents unlimited)
     nologging compute statistics
-; commit;
+;
+
+drop index cdw.ijob_class_d_a4;
 
 create bitmap index cdw.ijob_class_d_a4 on cdw.em_job_class_d (incl_excl)
     tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
     storage (initial 10m  minextents 1 maxextents unlimited)
     nologging compute statistics
-; commit;
+;
+
+drop index cdw.ijob_class_d_a5;
 
 create bitmap index cdw.ijob_class_d_a5 on cdw.em_job_class_d (job_function)
   tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
   storage (initial 10m  minextents 1 maxextents unlimited)
   nologging compute statistics
-; commit;
+; 
+
+commit;

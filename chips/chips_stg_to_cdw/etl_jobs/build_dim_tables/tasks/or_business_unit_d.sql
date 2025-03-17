@@ -1,6 +1,6 @@
 alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss';
 
-truncate table cdw.or_business_unit_d; commit;
+truncate table cdw.or_business_unit_d; 
 
 drop index cdw.ibusiness_unit_d_pk;
 drop index cdw.ibusiness_unit_d_a1;
@@ -26,10 +26,6 @@ drop index cdw.ibusiness_unit_d_a20;
 drop index cdw.ibusiness_unit_d_a21;
 drop index cdw.ibusiness_unit_d_a22;
 drop index cdw.ibusiness_unit_d_a23;
-
-drop sequence cdw.or_business_unit_d_seq; commit;
-
-create sequence cdw.or_business_unit_d_seq; commit;
 
 insert into cdw.or_business_unit_d
     with
@@ -202,155 +198,157 @@ insert into cdw.or_business_unit_d
         order by px.setid || px.tree_node, greatest(px.effdt, leaf.effdt)
     )
     select  
-        cdw.or_business_unit_d_seq.nextval bu_sid,
+        row_number() over (order by bu_bk) bu_sid,
         s.*,
         null end_date,
         null cre_date,
         current_date udt_date,
         'Y' curr_ind
     from src_data s
-; commit;
+; 
 
 create unique index cdw.ibusiness_unit_d_pk  on cdw.or_business_unit_d (bu_sid) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create index cdw.ibusiness_unit_d_a1  on cdw.or_business_unit_d (bu_bk) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create bitmap index cdw.ibusiness_unit_d_a2  on cdw.or_business_unit_d (level1_bk) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create bitmap index cdw.ibusiness_unit_d_a3  on cdw.or_business_unit_d (level1_deptid) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create bitmap index cdw.ibusiness_unit_d_a4  on cdw.or_business_unit_d (level1_descr) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create bitmap index cdw.ibusiness_unit_d_a5  on cdw.or_business_unit_d (level2_bk) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create bitmap index cdw.ibusiness_unit_d_a6  on cdw.or_business_unit_d (level2_deptid) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create bitmap index cdw.ibusiness_unit_d_a7  on cdw.or_business_unit_d (level2_descr) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create bitmap index cdw.ibusiness_unit_d_a8  on cdw.or_business_unit_d (level3_bk) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create bitmap index cdw.ibusiness_unit_d_a9  on cdw.or_business_unit_d (level3_deptid) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create bitmap index cdw.ibusiness_unit_d_a10  on cdw.or_business_unit_d (level3_descr) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create index cdw.ibusiness_unit_d_a11 on cdw.or_business_unit_d (level4_bk) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create index cdw.ibusiness_unit_d_a12 on cdw.or_business_unit_d (level4_deptid) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create index cdw.ibusiness_unit_d_a13  on cdw.or_business_unit_d (level4_descr) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create index cdw.ibusiness_unit_d_a14  on cdw.or_business_unit_d (level5_bk) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit;
+; 
  
 create index cdw.ibusiness_unit_d_a15  on cdw.or_business_unit_d (level5_deptid) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create index cdw.ibusiness_unit_d_a16  on cdw.or_business_unit_d (level5_descr) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit;
+; 
  
 create index cdw.ibusiness_unit_d_a17  on cdw.or_business_unit_d (level6_bk) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create index cdw.ibusiness_unit_d_a18  on cdw.or_business_unit_d (level6_deptid) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit;
+; 
  
 create index cdw.ibusiness_unit_d_a19  on cdw.or_business_unit_d (level6_descr) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create index cdw.ibusiness_unit_d_a20  on cdw.or_business_unit_d (level7_bk) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create index cdw.ibusiness_unit_d_a21  on cdw.or_business_unit_d (level7_deptid) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit;
+; 
  
 create index cdw.ibusiness_unit_d_a22  on cdw.or_business_unit_d (level7_descr) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit; 
+;  
  
 create bitmap index cdw.ibusiness_unit_d_a23  on cdw.or_business_unit_d (curr_ind) 
      tablespace cdw_indx   pctfree 10   initrans 2   maxtrans 255 
      storage  (initial 10m  minextents 1  maxextents unlimited) 
      nologging compute statistics
-; commit;
+; 
+
+commit;
