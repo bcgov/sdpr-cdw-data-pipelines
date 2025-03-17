@@ -25,7 +25,7 @@ insert into cdw.em_position_d
             p.can_noc_cd,
             noc_tbl.noc_descr noc,
             p.effdt eff_date,
-            lag(effdt) over (partition by position_nbr order by effdt desc) end_date
+            lag(p.effdt) over (partition by p.position_nbr order by p.effdt desc) end_date
         from chips_stg.ps_position_data p
         left join (
             select distinct
@@ -65,6 +65,7 @@ insert into cdw.em_position_d
             )
         ) noc_tbl
             on p.can_noc_cd = noc_tbl.can_noc_cd
+        order by eff_date
     )
     select 
         cdw.em_position_d_seq.nextval position_sid, 
