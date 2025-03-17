@@ -1,12 +1,4 @@
-truncate table cdw.em_position_d; commit;
-
-drop index cdw.iposition_d_a1;
-drop index cdw.iposition_d_a2;
-drop index cdw.iposition_d_a3;
-
-drop sequence cdw.em_position_d_seq; commit;
-
-create sequence cdw.em_position_d_seq; commit;
+truncate table cdw.em_position_d;
 
 insert into cdw.em_position_d
     with
@@ -68,7 +60,7 @@ insert into cdw.em_position_d
         order by eff_date
     )
     select 
-        cdw.em_position_d_seq.nextval position_sid, 
+        rownum position_sid, 
         s.*,
         current_date udt_date,
         case
@@ -76,24 +68,30 @@ insert into cdw.em_position_d
           else 'Y'
         end curr_ind
     from src_data s
-; commit;
+;
+
+drop index cdw.iposition_d_a1;
 
 create index cdw.iposition_d_a1 on cdw.em_position_d (position_nbr)
      tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
      storage  (initial 10m minextents 1 maxextents unlimited)
      nologging compute statistics
-; commit;
+; 
 
+drop index cdw.iposition_d_a2;
 
 create bitmap index cdw.iposition_d_a2 on cdw.em_position_d (can_noc_cd)
      tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
      storage  (initial 10m minextents 1 maxextents unlimited)
      nologging compute statistics
-; commit;
+; 
 
+drop index cdw.iposition_d_a3;
 
 create bitmap index cdw.iposition_d_a3 on cdw.em_position_d (noc_sub_cd)
      tablespace cdw_indx pctfree 10 initrans 2 maxtrans 255
      storage (initial 10m minextents 1 maxextents unlimited)
      nologging compute statistics
-; commit;
+; 
+
+commit;
