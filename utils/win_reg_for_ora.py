@@ -27,7 +27,6 @@ class WinRegForOra:
     # Class Env Vars
     # the directory in Registry Editor that contains Oracle connection strings
     oracle_conn_str_dir_in_winreg = os.getenv('ORACLE_CONN_STR_DIR_IN_WINREG')
-    print('xxxxx', oracle_conn_str_dir_in_winreg)
 
     def __init__(self):
         pass
