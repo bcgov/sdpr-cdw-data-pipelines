@@ -1,9 +1,35 @@
 import winreg
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
-class WindowsRegistry:
+class WinRegForOra:
+    '''
+    Gets Oracle connection strings stored in Windows Registry on the local machine.
+
+    Required Env Vars:
+        ORACLE_CONN_STR_DIR_IN_WINREG: the root directory in Registry Editor that 
+            contains keys with Oracle connection string values
+
+    Connection string format: user/password@servicename
+
+    Example:
+        if ORACLE_CONN_STR_DIR_IN_WINREG = Databases\Oracle\\
+        then the full path to this dir in Registry Editor is:
+            Computer\HKEY_LOCAL_MACHINE\Databases\Oracle
+        and this dir can contain multiple key folders that each contain
+        connection strings as values. Suppose one of these key folders is
+        names CW1D, then the full key path to the connection string is:
+            Computer\HKEY_LOCAL_MACHINE\Databases\Oracle\CW1D
+    '''
+    
+    # Class Env Vars
+    # the directory in Registry Editor that contains Oracle connection strings
+    oracle_conn_str_dir_in_winreg = os.getenv('ORACLE_CONN_STR_DIR_IN_WINREG')
+
     def __init__(self):
-        self.oracle_key_body = r'SOFTWARE\Datasources\SDSI\Databases\Oracle\\'
+        pass
 
     def get_oracle_conn_str_paths(self):
         """
@@ -15,7 +41,7 @@ class WindowsRegistry:
         Returns:
             dict: A dictionary containing base path and list of endpoints.
         """
-        key_path = self.oracle_key_body
+        key_path = self.oracle_conn_str_dir_in_winreg
         aKey = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_ALL_ACCESS)
         paths = {"base_path": key_path + "\\", "endpoints": []}
         try:
@@ -39,7 +65,7 @@ class WindowsRegistry:
             str: The Oracle DB connection string.
         """
         local_computer_key = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
-        key_path = self.oracle_key_body + conn_str_key_endpoint
+        key_path = self.oracle_conn_str_dir_in_winreg + conn_str_key_endpoint
         conn_str_key = winreg.OpenKey(local_computer_key, rf"{key_path}")
         name, value, type = winreg.EnumValue(conn_str_key, 0)
         winreg.CloseKey(conn_str_key)

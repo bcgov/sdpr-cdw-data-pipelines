@@ -1,8 +1,11 @@
 import oracledb
-from utils.windows_registry import WindowsRegistry
+from utils.win_reg_for_ora import WinRegForOra
 import pandas as pd
 import polars as pl
 import logging
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 logger = logging.getLogger('__main__.' + __name__)
 
@@ -18,6 +21,10 @@ class OracleDB:
         conn_str_key_endpoint (str): The last part of the Windows Registry key that yields the Oracle connection strings.
         credentials (dict[str, str], optional): A dictionary containing additional credentials.
     """
+
+    # Class Env Vars
+    # the directory containing tnsnames.ora
+    tnsnames_config_dir = os.getenv('TNSNAMES_CONFIG_DIR')
 
     def __init__(
         self, 
@@ -53,7 +60,7 @@ class OracleDB:
         Args:
             conn_str_key_endpoint (str): The endpoint for retrieving the Oracle connection string from the registry.
         """
-        reg = WindowsRegistry()
+        reg = WinRegForOra()
         db_credentials = reg.get_oracle_conn_dict(conn_str_key_endpoint)
         self.user = db_credentials["user"]
         pwd = db_credentials["pwd"]
@@ -62,7 +69,7 @@ class OracleDB:
             user=self.user,
             password=pwd,
             dsn=fr'{self.service_name}.world',
-            config_dir="E:/Oracle/product/18.0.0/64bit/network/admin",
+            config_dir=self.tnsnames_config_dir,
         )
         logger.info("connected to: " + self.service_name + "." + self.user)
         self.cursor = self.conn.cursor()

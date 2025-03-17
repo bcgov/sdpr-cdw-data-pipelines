@@ -5,12 +5,12 @@ import os
 load_dotenv()
 base_dir = os.getenv('MAIN_BASE_DIR')
 sys.path.append(base_dir)
-from utils.windows_registry import WindowsRegistry
+from utils.win_reg_for_ora import WinRegForOra
 
-class TestWindowsRegistry(unittest.TestCase):
+class TestWinRegForOra(unittest.TestCase):
 
     def setUp(self):
-        self.wr = WindowsRegistry()
+        self.wr = WinRegForOra()
 
     def test_get_oracle_conn_str_paths(self):
         paths = self.wr.get_oracle_conn_str_paths()
