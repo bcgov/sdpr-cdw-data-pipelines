@@ -24,7 +24,8 @@ insert into cdw.em_position_d
             subnoc_tbl.sub_descr subcode,
             p.can_noc_cd,
             noc_tbl.noc_descr noc,
-            p.effdt eff_date
+            p.effdt eff_date,
+            lag(effdt) over (partition by position_nbr order by effdt desc) end_date
         from chips_stg.ps_position_data p
         left join (
             select distinct
@@ -64,19 +65,15 @@ insert into cdw.em_position_d
             )
         ) noc_tbl
             on p.can_noc_cd = noc_tbl.can_noc_cd
-        where p.effdt = (
-            select max(p2.effdt)
-            from chips_stg.ps_position_data p2
-            where p2.position_nbr = p.position_nbr
-                and p2.effdt <= sysdate
-        )
     )
     select 
         cdw.em_position_d_seq.nextval position_sid, 
         s.*,
-        null end_date,
         current_date udt_date,
-        'Y' curr_ind
+        case
+          when end_date is not null then 'N'
+          else 'Y'
+        end curr_ind
     from src_data s
 ; commit;
 
