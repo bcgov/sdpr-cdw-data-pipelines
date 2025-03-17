@@ -1,7 +1,7 @@
 truncate table cdw.or_location_d;
 
 insert into cdw.or_location_d
-    with
+with
     src_data as (
         select 
             l.setid || l.location as setid_loc,
@@ -23,7 +23,9 @@ insert into cdw.or_location_d
                 trim(l.state)
             ) as state,
             l.country,
-            l.country_code
+            l.country_code,
+            l.effdt eff_dt,
+            lag(l.effdt) over (partition by l.location order by l.effdt desc) end_dt
         from 
             chips_stg.ps_location_tbl l
         join 
@@ -45,22 +47,31 @@ insert into cdw.or_location_d
         where 
             l.setid = 'BCSET'
             and l.eff_status = 'A'
-            and l.effdt = (
-                select max(l2.effdt)
-                from chips_stg.ps_location_tbl l2
-                where l.setid = l2.setid
-                    and l.location = l2.location
-                    and l.eff_status = l2.eff_status
-                    and l2.effdt <= sysdate
-            )
     )
     select 
         row_number() over (order by setid_loc) location_sid, 
-        s.*,
-        'Y' curr_ind,
+        s.setid_loc,
+        s.setid,
+        s.location,
+        s.descr,
+        s.descrshort,
+        s.address1,
+        s.address2,
+        s.address3,
+        s.address4,
+        s.postal,
+        s.city,
+        s.regional_district,
+        s.state,
+        s.country,
+        s.country_code,
+        case
+            when end_dt is not null then 'N'
+            else 'Y'
+        end curr_ind,
         current_date upt_dt,
-        null eff_dt,
-        null end_dt
+        s.eff_dt,
+        s.end_dt
     from src_data s
 ;
 
