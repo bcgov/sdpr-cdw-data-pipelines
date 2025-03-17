@@ -1,8 +1,8 @@
 truncate table cdw.em_appointment_status_d; commit;
 
-drop sequence cdw.em_appointment_status_d_seq; commit;
+-- drop sequence cdw.em_appointment_status_d_seq; commit;
 
-create sequence cdw.em_appointment_status_d_seq; commit;
+-- create sequence cdw.em_appointment_status_d_seq; commit;
 
 insert into cdw.em_appointment_status_d
     with
@@ -53,7 +53,8 @@ insert into cdw.em_appointment_status_d
                 )
         ) x
             ON j.empl_ctg = x.empl_ctg
+        order by appointment_status
     )
-    select s.*, cdw.em_appointment_status_d_seq.nextval appt_status_sid
+    select s.*, rownum appt_status_sid
     from src_data s
 ; commit;
