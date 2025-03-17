@@ -7,11 +7,11 @@ insert into cdw.em_job_class_d
     src_data as (
         select
             jc.setid||jc.jobcode jobcode_bk,
+            jc.descr jc_descr,
             jc.setid,
             jc.jobcode,
             jc.effdt,
             jc.eff_status jc_eff_status,
-            jc.descr jc_descr,
             jc.descrshort jc_descrshort,
             jc.sal_admin_plan,
             jc.grade,
@@ -70,48 +70,20 @@ insert into cdw.em_job_class_d
                 '1','Included',
                 '0','Excluded',
                 null
-            ) incl_excl_descr
+            ) incl_excl_descr,
+            lag(jc.effdt) over (partition by jc.jobcode order by jc.effdt desc) eff_end_dt
         from chips_stg.ps_jobcode_tbl jc
         order by jc.setid, jc.jobcode, jc.effdt
-    ),
-    -- add a column for the max(effdt) for each jobcode_bk
-    src_with_max_effdt as (
-        select s.*, max(effdt) over (partition by jobcode_bk) max_effdt
-        from src_data s
-    ),
-    -- select only most recent records for each job code
-    load_data as (
-        select 
-            jobcode_bk,
-            jc_descr,
-            setid,
-            jobcode,
-            effdt,
-            jc_eff_status,
-            jc_descrshort,
-            sal_admin_plan,
-            grade,
-            step,
-            union_cd,
-            std_hours,
-            std_hrs_frequency,
-            job_function,
-            job_func_descr,
-            emp_group,
-            emp_grp_descr,
-            incl_excl,
-            incl_excl_descr
-        from src_with_max_effdt
-        where effdt = max_effdt
     )
     select 
         row_number() over (order by effdt) jobclass_sid, 
-        l.*,
-        null eff_end_dt,
-        'Y' curr_ind
-    from load_data l
+        s.*,
+        case
+            when eff_end_dt is not null then 'N'
+            else 'Y'
+        end curr_ind
+    from src_data s
 ;
-
 
 drop index cdw.ijob_class_d_a1;
 
