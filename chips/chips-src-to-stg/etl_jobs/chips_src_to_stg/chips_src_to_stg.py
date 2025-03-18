@@ -2,11 +2,11 @@
 import sys
 from dotenv import load_dotenv
 import os
+import logging
 load_dotenv()
 base_dir = os.getenv('PEOPLESOFT_ETL_BASE_DIR')
 sys.path.append(base_dir)
 from src.peoplesoft_etl import *
-import logging
 
 this_dir = os.path.dirname(os.path.realpath(__file__))
 logger = logging.getLogger(__name__)
