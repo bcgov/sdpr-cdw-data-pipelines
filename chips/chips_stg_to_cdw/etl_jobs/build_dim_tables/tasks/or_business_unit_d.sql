@@ -4,37 +4,15 @@ truncate table cdw.or_business_unit_d;
 
 insert into cdw.or_business_unit_d
     with
-    ranked_depts as (
-        select dept.*,
-            row_number() over (partition by setid, deptid order by effdt desc) as rn
-        from chips_stg.ps_dept_tbl dept
-    ),
-    latest_eff_dt_by_dept as (
-        select *
-        from ranked_depts
-        where rn = 1
-    ),
-    load_latest_eff_dt_by_dept as (
-        select * 
-        from latest_eff_dt_by_dept
-    ),
-    ranked_companies AS (
-        select co.*,
-            row_number() over (partition by company order by effdt desc) as rn
-        from chips_stg.ps_company_tbl co
-    ),
-    latest_eff_dt_by_company as (
-        select *
-        from ranked_companies
-        where rn = 1
-    ),
-    load_latest_eff_dt_by_company as (
-        select * 
-        from latest_eff_dt_by_company
-    ),
     level_query as (
         select setid, deptid, descr, descrshort, effdt 
-        from load_latest_eff_dt_by_dept
+        from chips_stg.ps_dept_tbl d1
+        -- where effdt = (
+        --     select max(effdt) 
+        --     from chips_stg.ps_dept_tbl d2 
+        --     where d1.setid = d2.setid 
+        --         and d1.deptid = d2.deptid
+        -- )
     ),
     src_data as (
         select 
@@ -93,92 +71,103 @@ insert into cdw.or_business_unit_d
             leaf.tgb_gl_service_ln as gl_service_ln,
             leaf.tgb_gl_project as gl_project,
             leaf.tgb_gl_stob as gl_stob,
-            greatest(px.effdt, leaf.effdt) as eff_date
+            greatest(px.effdt, leaf.effdt) as eff_date,
+            lag(px.effdt) over (partition by px.setid, leaf.deptid order by px.effdt desc) end_date
         from chips_stg.px_tree_flattened px
 
         left join (
             select setid, deptid, descr, descrshort, company, effdt,
                 tgb_gl_client, tgb_gl_response, tgb_gl_service_ln, tgb_gl_project, tgb_gl_stob
-            from load_latest_eff_dt_by_dept
+            from chips_stg.ps_dept_tbl d1
+            -- where effdt = (
+            --     select max(effdt) 
+            --     from chips_stg.ps_dept_tbl d2 
+            --     where d1.setid = d2.setid 
+            --         and d1.deptid = d2.deptid
+            --     )
         ) leaf
-            on px.setid=leaf.setid 
-                and px.tree_node=leaf.deptid
+            on px.setid = leaf.setid 
+                and px.tree_node = leaf.deptid
 
         left join (
-            select * from level_query
+            select * 
+            from level_query d1
         ) l1 
             on px.setid=l1.setid 
                 and px.l1_tree_node=l1.deptid
 
         left join (
-            select * from level_query
+            select * 
+            from level_query d1
         ) l2 
             on px.setid = l2.setid 
                 and px.l2_tree_node = l2.deptid
 
         left join (
-            select * from level_query
+            select * 
+            from level_query d1
         ) l3 
             on px.setid = l3.setid 
                 and px.l3_tree_node = l3.deptid
 
         left join (
-            select * from level_query
+            select * 
+            from level_query d1
         ) l4 
             on px.setid = l4.setid 
                 and px.l4_tree_node = l4.deptid
 
         left join (
-            select * from level_query
+            select * 
+            from level_query d1
         ) l5 
             on px.setid = l5.setid 
                 and px.l5_tree_node = l5.deptid
 
         left join (
-            select * from level_query
+            select * 
+            from level_query d1
         ) l6 
             on px.setid = l6.setid 
                 and px.l6_tree_node = l6.deptid
 
         left join (
-            select * from level_query
+            select * 
+            from level_query d1
         ) l7 
             on px.setid = l7.setid 
                 and px.l7_tree_node = l7.deptid
 
         left join (
             select company, descr, descrshort 
-            from load_latest_eff_dt_by_company
+            from chips_stg.ps_company_tbl t1  
+            -- where effdt = (
+            --     select max(effdt)
+            --     from chips_stg.ps_company_tbl t2 
+            --     where t1.company = t2.company 
+            -- )
         ) cmp 
             on leaf.company=cmp.company
-
-        left join (
-            select max(eff_date) eff_date,d.bu_bk
-            from cdw.or_business_unit_d d 
-            group by d.bu_bk 
-        ) bu
-            on px.setid || px.tree_node = bu.bu_bk
-
         where px.tree_name = 'DEPT_SECURITY'
             and px.setid not in ('QEGID', 'COMMN','ST000')
             and px.setid like 'ST%'
-            -- only select the latest row from the PX file to be added to the SCD
-            and px.effdt = (
-                select max(px2.effdt) 
-                from chips_stg.px_tree_flattened px2 
-                where px2.setid = px.setid 
-                    and px2.tree_node = px.tree_node
-            )
-            and greatest(px.effdt, leaf.effdt) >= nvl(bu.eff_date, to_date('19000101', 'yyyymmdd'))
+            -- and px.effdt = (
+            --     select max(px2.effdt) 
+            --     from chips_stg.px_tree_flattened px2 
+            --     where px2.setid = px.setid 
+            --         and px2.tree_node = px.tree_node
+            -- )
         order by px.setid || px.tree_node, greatest(px.effdt, leaf.effdt)
     )
     select  
         row_number() over (order by bu_bk) bu_sid,
         s.*,
-        null end_date,
         null cre_date,
         current_date udt_date,
-        'Y' curr_ind
+        case
+            when end_date is not null then 'N'
+            else 'Y'
+        end curr_ind
     from src_data s
 ; 
 
