@@ -7,12 +7,12 @@ insert into cdw.or_business_unit_d
     level_query as (
         select setid, deptid, descr, descrshort, effdt 
         from chips_stg.ps_dept_tbl d1
-        -- where effdt = (
-        --     select max(effdt) 
-        --     from chips_stg.ps_dept_tbl d2 
-        --     where d1.setid = d2.setid 
-        --         and d1.deptid = d2.deptid
-        -- )
+        where effdt = (
+            select max(effdt) 
+            from chips_stg.ps_dept_tbl d2 
+            where d1.setid = d2.setid 
+                and d1.deptid = d2.deptid
+        )
     ),
     src_data as (
         select 
@@ -79,12 +79,12 @@ insert into cdw.or_business_unit_d
             select setid, deptid, descr, descrshort, company, effdt,
                 tgb_gl_client, tgb_gl_response, tgb_gl_service_ln, tgb_gl_project, tgb_gl_stob
             from chips_stg.ps_dept_tbl d1
-            -- where effdt = (
-            --     select max(effdt) 
-            --     from chips_stg.ps_dept_tbl d2 
-            --     where d1.setid = d2.setid 
-            --         and d1.deptid = d2.deptid
-            --     )
+            where effdt = (
+                select max(effdt) 
+                from chips_stg.ps_dept_tbl d2 
+                where d1.setid = d2.setid 
+                    and d1.deptid = d2.deptid
+                )
         ) leaf
             on px.setid = leaf.setid 
                 and px.tree_node = leaf.deptid
@@ -141,22 +141,22 @@ insert into cdw.or_business_unit_d
         left join (
             select company, descr, descrshort 
             from chips_stg.ps_company_tbl t1  
-            -- where effdt = (
-            --     select max(effdt)
-            --     from chips_stg.ps_company_tbl t2 
-            --     where t1.company = t2.company 
-            -- )
+            where effdt = (
+                select max(effdt)
+                from chips_stg.ps_company_tbl t2 
+                where t1.company = t2.company 
+            )
         ) cmp 
             on leaf.company=cmp.company
         where px.tree_name = 'DEPT_SECURITY'
             and px.setid not in ('QEGID', 'COMMN','ST000')
             and px.setid like 'ST%'
-            -- and px.effdt = (
-            --     select max(px2.effdt) 
-            --     from chips_stg.px_tree_flattened px2 
-            --     where px2.setid = px.setid 
-            --         and px2.tree_node = px.tree_node
-            -- )
+            and px.effdt = (
+                select max(px2.effdt) 
+                from chips_stg.px_tree_flattened px2 
+                where px2.setid = px.setid 
+                    and px2.tree_node = px.tree_node
+            )
         order by px.setid || px.tree_node, greatest(px.effdt, leaf.effdt)
     )
     select  
