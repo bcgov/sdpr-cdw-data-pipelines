@@ -1,7 +1,7 @@
 # CHIPS_STG to CDW
 Tables in the CHIPS_STG schema form the basis for the 'EM', as in 'employee', series of fact and dimension tables in the CDW schema. 
 
-## How to Run CHIPS_STG to CDW ETL Jobs
+## How to Run CHIPS_STG to CDW ETL Jobs on you own Machine as a Developer
 1. Set the required environment variables. You can either do this by adding system variable on your machine or you can use the dotenv python library by creating a .env file in the same directory as this readme: `...\chips\chips_stg_to_cdw\.env`.
 2. Set the following variable values (example values are provided--will be different for your machine): 
     ```conf
