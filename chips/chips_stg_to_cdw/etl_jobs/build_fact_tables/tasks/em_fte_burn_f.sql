@@ -28,46 +28,56 @@ truncate table cdw.em_fte_burn_f;
 
 insert into cdw.em_fte_burn_f
     with
+    ranked_job AS (
+        SELECT j.*,
+            ROW_NUMBER() OVER (
+                PARTITION BY j.emplid, j.empl_rcd
+                ORDER BY j.effdt DESC, j.effseq DESC
+            ) AS rn
+        FROM chips_stg.ps_job j
+    ),
     src_data as (
-        select
+        SELECT
             f.emplid,
             f.pay_end_dt,
-            trim(TO_CHAR(f.pay_end_dt,'YYYYMMDD')) || '0' as PAY_END_DT_SK,
-            sc.SETID||F.deptid bu_bk,
-            sc2.setid||F.jobcode jobcode_bk,
+            TRIM(TO_CHAR(f.pay_end_dt, 'YYYYMMDD')) || '0' AS PAY_END_DT_SK,
+            sc.SETID || f.deptid AS bu_bk,
+            sc2.setid || f.jobcode AS jobcode_bk,
             f.position_nbr,
             f.appointment_status,
             j.empl_status,
-            j.setid_location||j.location location_bk,
+            j.setid_location || j.location AS location_bk,
             f.fte_reg,
             f.fte_ovt,
             f.fire_ovt,
-            '[DIM_SID (Unmatched)]' REASON
-        from
-            chips_stg.ps_job j,
-            chips_stg.ps_tgb_fteburn_tbl f,
-            chips_stg.ps_set_cntrl_rec sc,
-            chips_stg.ps_set_cntrl_rec sc2
-        where f.emplid = j.emplid
-            and f.empl_rcd = j.empl_rcd
-            and j.effdt = (
-                select max(j2.effdt)
-                from chips_stg.ps_job j2
-                where j2.emplid = j.emplid
-                    and j2.empl_rcd = j.empl_rcd
-                    and j2.effdt <= f.pay_end_dt
+            '[DIM_SID (Unmatched)]' AS REASON
+        FROM
+            chips_stg.ps_tgb_fteburn_tbl f
+            INNER JOIN chips_stg.ps_job j
+                ON f.emplid = j.emplid
+                AND f.empl_rcd = j.empl_rcd
+            INNER JOIN chips_stg.ps_set_cntrl_rec sc
+                ON sc.recname = 'DEPT_TBL'
+                AND sc.setcntrlvalue = f.business_unit
+            INNER JOIN chips_stg.ps_set_cntrl_rec sc2
+                ON sc2.recname = 'JOBCODE_TBL'
+                AND sc2.setcntrlvalue = f.business_unit
+            AND j.effdt = (
+                SELECT MAX(j2.effdt)
+                FROM chips_stg.ps_job j2
+                WHERE j2.emplid = j.emplid
+                    AND j2.empl_rcd = j.empl_rcd
+                    AND j2.effdt <= f.pay_end_dt
             )
-            and j.effseq = (
-                select max(j3.effseq)
-                from chips_stg.ps_job j3
-                where j3.emplid = j.emplid
-                    and j3.empl_rcd = j.empl_rcd
-                    and j3.effdt = j.effdt
+            AND j.effseq = (
+                SELECT MAX(j3.effseq)
+                FROM chips_stg.ps_job j3
+                WHERE j3.emplid = j.emplid
+                    AND j3.empl_rcd = j.empl_rcd
+                    AND j3.effdt = j.effdt
             )
-            and sc.recname = 'DEPT_TBL'  
-            and sc.setcntrlvalue = f.business_unit
-            and sc2.recname = 'JOBCODE_TBL'  
-            and sc2.setcntrlvalue = f.business_unit
+        -- WHERE
+        --     f.pay_end_dt >= ADD_MONTHS(TRUNC(CURRENT_DATE), -12*10)
     )
     select
         apt.appt_status_sid appointment_status_sid,
