@@ -26,75 +26,115 @@ commit;
 
 truncate table cdw.em_fte_burn_f;
 
-insert into cdw.em_fte_burn_f
-    with
-    src_data as (
-        SELECT
-            f.emplid,
-            f.pay_end_dt,
-            TRIM(TO_CHAR(f.pay_end_dt, 'YYYYMMDD')) || '0' AS PAY_END_DT_SK,
-            sc.SETID || f.deptid AS bu_bk,
-            sc2.setid || f.jobcode AS jobcode_bk,
-            f.position_nbr,
-            f.appointment_status,
-            j.empl_status,
-            j.setid_location || j.location AS location_bk,
-            f.fte_reg,
-            f.fte_ovt,
-            f.fire_ovt,
-            '[DIM_SID (Unmatched)]' AS REASON
-        FROM
-            chips_stg.ps_tgb_fteburn_tbl f
-            INNER JOIN chips_stg.ps_job j
-                ON f.emplid = j.emplid
-                AND f.empl_rcd = j.empl_rcd
-            INNER JOIN chips_stg.ps_set_cntrl_rec sc
-                ON sc.recname = 'DEPT_TBL'
-                AND sc.setcntrlvalue = f.business_unit
-            INNER JOIN chips_stg.ps_set_cntrl_rec sc2
-                ON sc2.recname = 'JOBCODE_TBL'
-                AND sc2.setcntrlvalue = f.business_unit
-                AND j.effdt = (
-                    SELECT MAX(j2.effdt)
-                    FROM chips_stg.ps_job j2
-                    WHERE j2.emplid = j.emplid
-                        AND j2.empl_rcd = j.empl_rcd
-                        AND j2.effdt <= f.pay_end_dt
+set serveroutput on;
+
+BEGIN
+    FOR pay_end_dts IN (
+        select distinct pay_end_dt 
+        from chips_stg.ps_tgb_fteburn_tbl 
+        where pay_end_dt >= ADD_MONTHS(TRUNC(CURRENT_DATE), -1)
+        order by pay_end_dt desc
+    ) LOOP
+        dbms_output.put_line(pay_end_dts.pay_end_dt);
+        insert into cdw.em_fte_burn_f
+            with
+            src_data as (
+                SELECT
+                    f.emplid,
+                    f.pay_end_dt,
+                    TRIM(TO_CHAR(f.pay_end_dt, 'YYYYMMDD')) || '0' AS PAY_END_DT_SK,
+                    sc.SETID || f.deptid AS bu_bk,
+                    sc2.setid || f.jobcode AS jobcode_bk,
+                    f.position_nbr,
+                    f.appointment_status,
+                    j.empl_status,
+                    j.setid_location || j.location AS location_bk,
+                    f.fte_reg,
+                    f.fte_ovt,
+                    f.fire_ovt,
+                    '[DIM_SID (Unmatched)]' AS REASON
+                FROM
+                    chips_stg.ps_tgb_fteburn_tbl f
+                    INNER JOIN chips_stg.ps_job j
+                        ON f.emplid = j.emplid
+                        AND f.empl_rcd = j.empl_rcd
+                    INNER JOIN chips_stg.ps_set_cntrl_rec sc
+                        ON sc.recname = 'DEPT_TBL'
+                        AND sc.setcntrlvalue = f.business_unit
+                    INNER JOIN chips_stg.ps_set_cntrl_rec sc2
+                        ON sc2.recname = 'JOBCODE_TBL'
+                        AND sc2.setcntrlvalue = f.business_unit
+                        AND j.effdt = (
+                            SELECT MAX(j2.effdt)
+                            FROM chips_stg.ps_job j2
+                            WHERE j2.emplid = j.emplid
+                                AND j2.empl_rcd = j.empl_rcd
+                                AND j2.effdt <= f.pay_end_dt
+                        )
+                        AND j.effseq = (
+                            SELECT MAX(j3.effseq)
+                            FROM chips_stg.ps_job j3
+                            WHERE j3.emplid = j.emplid
+                                AND j3.empl_rcd = j.empl_rcd
+                                AND j3.effdt = j.effdt
+                        )
+                -- WHERE
+                --     f.pay_end_dt >= ADD_MONTHS(TRUNC(CURRENT_DATE), -12*7)
+                where f.pay_end_dt = pay_end_dts.pay_end_dt
+            )
+            select
+                apt.appt_status_sid appointment_status_sid,
+                loc.location_sid,
+                s.pay_end_dt_sk,
+                es.empl_status_sid,
+                pos.position_sid,
+                jc.jobclass_sid job_class_sid,
+                bu.bu_sid,
+                s.fte_reg,
+                s.fte_ovt,
+                s.fire_ovt,
+                s.emplid,
+                emp.empl_sid
+            from src_data s
+            -- joins on dim tables with historic records assume each pay_end_date in ps_tgb_fteburn_tbl 
+            -- spans 2 weeks and null effective dates in the dimension tables indicate the current record
+            left join cdw.em_employee_d emp 
+                on emp.emplid = s.emplid
+            left join cdw.or_business_unit_d bu 
+                on s.bu_bk = bu.bu_bk
+                and (
+                    bu.eff_date > s.pay_end_dt - 14
+                    and (bu.eff_date <= s.pay_end_dt or bu.curr_ind = 'Y')
                 )
-                AND j.effseq = (
-                    SELECT MAX(j3.effseq)
-                    FROM chips_stg.ps_job j3
-                    WHERE j3.emplid = j.emplid
-                        AND j3.empl_rcd = j.empl_rcd
-                        AND j3.effdt = j.effdt
+            left join cdw.em_job_class_d jc 
+                on s.jobcode_bk = jc.jobcode_bk
+                and (
+                    jc.eff_end_dt > s.pay_end_dt - 14
+                    and (jc.eff_end_dt <= s.pay_end_dt or jc.curr_ind = 'Y')
                 )
-        WHERE
-            f.pay_end_dt >= ADD_MONTHS(TRUNC(CURRENT_DATE), -12*7)
-    )
-    select
-        apt.appt_status_sid appointment_status_sid,
-        loc.location_sid,
-        s.pay_end_dt_sk,
-        es.empl_status_sid,
-        pos.position_sid,
-        jc.jobclass_sid job_class_sid,
-        bu.bu_sid,
-        s.fte_reg,
-        s.fte_ovt,
-        s.fire_ovt,
-        s.emplid,
-        emp.empl_sid
-    from src_data s
-    left join cdw.em_employee_d emp on emp.emplid = s.emplid
-    left join cdw.or_business_unit_d bu on s.bu_bk = bu.bu_bk
-    left join cdw.em_job_class_d jc on s.jobcode_bk = jc.jobcode_bk
-    left join cdw.em_position_d pos on s.position_nbr = pos.position_nbr
-    left join cdw.em_appointment_status_d apt on s.appointment_status = apt.appointment_status
-    left join cdw.em_employee_status_d es on s.empl_status = es.empl_status
-    left join cdw.or_location_d loc on s.location_bk = loc.setid_loc
-    where s.emplid is not null
-        and s.pay_end_dt_sk is not null
-;
+            left join cdw.em_position_d pos 
+                on s.position_nbr = pos.position_nbr
+                and (
+                    pos.eff_date > s.pay_end_dt - 14
+                    and (pos.eff_date <= s.pay_end_dt or pos.curr_ind = 'Y')
+                )
+            left join cdw.em_appointment_status_d apt 
+                on s.appointment_status = apt.appointment_status
+            left join cdw.em_employee_status_d es 
+                on s.empl_status = es.empl_status
+            left join cdw.or_location_d loc 
+                on s.location_bk = loc.setid_loc
+                and (
+                    loc.eff_dt > s.pay_end_dt - 14
+                    and (loc.eff_dt <= s.pay_end_dt or loc.curr_ind = 'Y')
+                )
+            where s.emplid is not null
+                and s.pay_end_dt_sk is not null
+        ;
+        commit;
+    END LOOP;
+END;
+/
 
 drop index cdw.ifte_burn_f_a1;
 
