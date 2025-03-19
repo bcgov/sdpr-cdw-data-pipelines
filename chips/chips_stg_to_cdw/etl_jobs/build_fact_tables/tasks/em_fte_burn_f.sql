@@ -28,14 +28,6 @@ truncate table cdw.em_fte_burn_f;
 
 insert into cdw.em_fte_burn_f
     with
-    ranked_job AS (
-        SELECT j.*,
-            ROW_NUMBER() OVER (
-                PARTITION BY j.emplid, j.empl_rcd
-                ORDER BY j.effdt DESC, j.effseq DESC
-            ) AS rn
-        FROM chips_stg.ps_job j
-    ),
     src_data as (
         SELECT
             f.emplid,
