@@ -71,7 +71,7 @@ insert into cdw.em_job_class_d
                 '0','Excluded',
                 null
             ) incl_excl_descr,
-            lag(jc.effdt) over (partition by jc.jobcode order by jc.effdt desc) eff_end_dt
+            lag(jc.effdt) over (partition by jc.setid, jc.jobcode, jc.effdt order by jc.effdt desc) eff_end_dt
         from chips_stg.ps_jobcode_tbl jc
         order by jc.setid, jc.jobcode, jc.effdt
     )
