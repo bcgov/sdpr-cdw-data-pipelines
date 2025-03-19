@@ -1,3 +1,29 @@
+-- create indexes for the base tables to increase performance
+
+drop index chips_stg.ps_tgb_fteburn_tbl1;
+
+create bitmap index chips_stg.ps_tgb_fteburn_tbl1  on chips_stg.ps_tgb_fteburn_tbl (emplid, empl_rcd, pay_end_dt, business_unit)
+tablespace chips_stg_indx   pctfree 10   initrans 2   maxtrans 255
+storage  (initial 10m  minextents 1  maxextents unlimited)
+nologging compute statistics;
+
+drop index chips_stg.ps_job1;
+
+create bitmap index chips_stg.ps_job1  on chips_stg.ps_job (emplid, empl_rcd, effdt DESC, effseq DESC)
+tablespace chips_stg_indx   pctfree 10   initrans 2   maxtrans 255
+storage  (initial 10m  minextents 1  maxextents unlimited)
+nologging compute statistics;
+
+drop index chips_stg.ps_set_cntrl_rec1;
+
+create bitmap index chips_stg.ps_set_cntrl_rec1  on chips_stg.ps_set_cntrl_rec (setcntrlvalue, recname)
+tablespace chips_stg_indx   pctfree 10   initrans 2   maxtrans 255
+storage  (initial 10m  minextents 1  maxextents unlimited)
+nologging compute statistics;
+
+commit;
+
+
 truncate table cdw.em_fte_burn_f;
 
 insert into cdw.em_fte_burn_f
