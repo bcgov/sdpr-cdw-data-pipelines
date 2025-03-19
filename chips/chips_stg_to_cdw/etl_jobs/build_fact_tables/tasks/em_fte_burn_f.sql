@@ -54,20 +54,20 @@ insert into cdw.em_fte_burn_f
             INNER JOIN chips_stg.ps_set_cntrl_rec sc2
                 ON sc2.recname = 'JOBCODE_TBL'
                 AND sc2.setcntrlvalue = f.business_unit
-            AND j.effdt = (
-                SELECT MAX(j2.effdt)
-                FROM chips_stg.ps_job j2
-                WHERE j2.emplid = j.emplid
-                    AND j2.empl_rcd = j.empl_rcd
-                    AND j2.effdt <= f.pay_end_dt
-            )
-            AND j.effseq = (
-                SELECT MAX(j3.effseq)
-                FROM chips_stg.ps_job j3
-                WHERE j3.emplid = j.emplid
-                    AND j3.empl_rcd = j.empl_rcd
-                    AND j3.effdt = j.effdt
-            )
+                AND j.effdt = (
+                    SELECT MAX(j2.effdt)
+                    FROM chips_stg.ps_job j2
+                    WHERE j2.emplid = j.emplid
+                        AND j2.empl_rcd = j.empl_rcd
+                        AND j2.effdt <= f.pay_end_dt
+                )
+                AND j.effseq = (
+                    SELECT MAX(j3.effseq)
+                    FROM chips_stg.ps_job j3
+                    WHERE j3.emplid = j.emplid
+                        AND j3.empl_rcd = j.empl_rcd
+                        AND j3.effdt = j.effdt
+                )
         WHERE
             f.pay_end_dt >= ADD_MONTHS(TRUNC(CURRENT_DATE), -12*7)
     )
