@@ -151,12 +151,13 @@ insert into cdw.or_business_unit_d
         where px.tree_name = 'DEPT_SECURITY'
             and px.setid not in ('QEGID', 'COMMN','ST000')
             and px.setid like 'ST%'
-            and px.effdt = (
-                select max(px2.effdt) 
-                from chips_stg.px_tree_flattened px2 
-                where px2.setid = px.setid 
-                    and px2.tree_node = px.tree_node
-            )
+            -- gets only the most recent record
+            -- and px.effdt = (
+            --     select max(px2.effdt) 
+            --     from chips_stg.px_tree_flattened px2 
+            --     where px2.setid = px.setid 
+            --         and px2.tree_node = px.tree_node
+            -- )
         order by px.setid || px.tree_node, greatest(px.effdt, leaf.effdt)
     )
     select  
