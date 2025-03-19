@@ -68,8 +68,8 @@ insert into cdw.em_fte_burn_f
                     AND j3.empl_rcd = j.empl_rcd
                     AND j3.effdt = j.effdt
             )
-        -- WHERE
-        --     f.pay_end_dt >= ADD_MONTHS(TRUNC(CURRENT_DATE), -12*10)
+        WHERE
+            f.pay_end_dt >= ADD_MONTHS(TRUNC(CURRENT_DATE), -12*7)
     )
     select
         apt.appt_status_sid appointment_status_sid,
