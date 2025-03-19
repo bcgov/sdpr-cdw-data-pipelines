@@ -71,7 +71,7 @@ insert into cdw.or_business_unit_d
             leaf.tgb_gl_service_ln as gl_service_ln,
             leaf.tgb_gl_project as gl_project,
             leaf.tgb_gl_stob as gl_stob,
-            greatest(px.effdt, leaf.effdt) as eff_date,
+            px.effdt as eff_date,
             lag(px.effdt) over (partition by px.setid, leaf.deptid order by px.effdt desc) end_date
         from chips_stg.px_tree_flattened px
 
