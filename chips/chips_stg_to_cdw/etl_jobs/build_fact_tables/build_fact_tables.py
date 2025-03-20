@@ -8,6 +8,7 @@ base_dir = os.getenv('MAIN_BASE_DIR')
 odb_conn_str_key_endpoint = os.getenv('ORACLE_CONN_STRING_KEY')
 sys.path.append(base_dir)
 from utils.oracle_db import OracleDB
+from tasks.em_fte_burn_f import build_em_fte_burn_f
 
 this_dir = os.path.dirname(os.path.realpath(__file__))
 this_file = Path(__file__).stem
@@ -38,7 +39,7 @@ def main():
     db = OracleDB(conn_str_key_endpoint = odb_conn_str_key_endpoint)
     run_sql_script(db, r'em_efp_fte_f.sql')
     run_sql_script(db, r'em_stiip_f.sql')
-    run_sql_script(db, r'em_fte_burn_f.sql')
+    build_em_fte_burn_f()
 
 if __name__ == "__main__":
     try:
