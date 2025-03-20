@@ -146,14 +146,46 @@ class OracleDB:
         Args:
             statement (str): The SQL statement to execute.
             parameters (optional): The parameters to bind to the statement.
-
-        Raises:
-            DatabaseException: If an error occurs during execution.
-            Exception: For any unhandled exceptions.
         """
-        # try:
         logger.debug(f'executing "{statement}" with {parameters}')
         self.cursor.execute(statement, parameters)
+
+    def execute_with_exception_handling(
+        self, statement: str, parameters=None, ignore_all_db_errors=False, ora_codes_to_ignore=None
+        ):
+        """ 
+        Executes an SQL statement with exception handling options
+
+        Args:
+            statement (str): an SQL statement.
+            parameters: parameters to pass to the sql statement.
+            ignore_all_db_errors (bool): continues to the next statement whenever
+                a DB error is encountered if True.
+            ora_codes_to_ignore (list[str]): a list of ora error codes of the form
+                ['ORA-XXXXX',...] to be ignored if encountered.
+        """
+        if ignore_all_db_errors:
+            try:
+                self.execute(statement, parameters=parameters)
+            except oracledb.Error as e:
+                error_obj, = e.args
+                message = error_obj.message
+                logger.warning(f'the following Oracle Error was ignored: {message}')
+                return
+        elif ora_codes_to_ignore is not None:
+            try:
+                self.execute(statement, parameters=parameters)
+            except oracledb.Error as e:
+                error_obj, = e.args
+                code = error_obj.full_code
+                message = error_obj.message
+                if code in ora_codes_to_ignore:
+                    logger.warning(f'the following Oracle Error was ignored: {message}')
+                    return
+                else:
+                    raise e
+        else:
+            self.execute(statement, parameters=parameters)
 
     def execute_many(self, statement: str, parameters) -> None:
         """
@@ -215,28 +247,12 @@ class OracleDB:
         sql_statements = split_sql_statements_in_str(sql_str=sql_file_content)
 
         for statement in sql_statements:
-            if ignore_all_db_errors:
-                try:
-                    self.execute(statement, parameters=parameters)
-                except oracledb.Error as e:
-                    error_obj, = e.args
-                    message = error_obj.message
-                    logger.warning(f'the following Oracle Error was ignored: {message}')
-                    continue
-            elif ora_codes_to_ignore is not None:
-                try:
-                    self.execute(statement, parameters=parameters)
-                except oracledb.Error as e:
-                    error_obj, = e.args
-                    code = error_obj.full_code
-                    message = error_obj.message
-                    if code in ora_codes_to_ignore:
-                        logger.warning(f'the following Oracle Error was ignored: {message}')
-                        continue
-                    else:
-                        raise e
-            else:
-                self.execute(statement, parameters=parameters)
+            self.execute_with_exception_handling(
+                statement=statement,
+                parameters=parameters,
+                ignore_all_db_errors=ignore_all_db_errors,
+                ora_codes_to_ignore=ora_codes_to_ignore,
+            )
 
     def query_to_df(self, query_string: str, parameters=None) -> pd.DataFrame:
         """
