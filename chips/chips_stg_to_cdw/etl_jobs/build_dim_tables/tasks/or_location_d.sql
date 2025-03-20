@@ -1,7 +1,7 @@
 truncate table cdw.or_location_d;
 
 insert into cdw.or_location_d
-with
+    with
     src_data as (
         select 
             l.setid || l.location as setid_loc,
