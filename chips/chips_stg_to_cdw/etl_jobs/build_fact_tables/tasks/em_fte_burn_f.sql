@@ -28,17 +28,34 @@ truncate table cdw.em_fte_burn_f;
 
 set serveroutput on;
 
+declare
+    curr_pay_end_dt date;
 BEGIN
     FOR pay_end_dts IN (
         select distinct pay_end_dt 
         from chips_stg.ps_tgb_fteburn_tbl 
+        -- where pay_end_dt >= ADD_MONTHS(TRUNC(CURRENT_DATE), 112*7)
         where pay_end_dt >= ADD_MONTHS(TRUNC(CURRENT_DATE), -1)
         order by pay_end_dt desc
     ) LOOP
         dbms_output.put_line(pay_end_dts.pay_end_dt);
+        select pay_end_dt into curr_pay_end_dt from pay_end_dts;
         insert into cdw.em_fte_burn_f
-            with
-            src_data as (
+            select
+                apt.appt_status_sid appointment_status_sid,
+                loc.location_sid,
+                s.pay_end_dt_sk,
+                es.empl_status_sid,
+                pos.position_sid,
+                jc.jobclass_sid job_class_sid,
+                bu.bu_sid,
+                s.fte_reg,
+                s.fte_ovt,
+                s.fire_ovt,
+                s.emplid,
+                emp.empl_sid
+            from (
+                -- the query of the chips_stg source data
                 SELECT
                     f.emplid,
                     f.pay_end_dt,
@@ -78,26 +95,9 @@ BEGIN
                                 AND j3.empl_rcd = j.empl_rcd
                                 AND j3.effdt = j.effdt
                         )
-                -- WHERE
-                --     f.pay_end_dt >= ADD_MONTHS(TRUNC(CURRENT_DATE), -12*7)
                 where f.pay_end_dt = pay_end_dts.pay_end_dt
-            )
-            select
-                apt.appt_status_sid appointment_status_sid,
-                loc.location_sid,
-                s.pay_end_dt_sk,
-                es.empl_status_sid,
-                pos.position_sid,
-                jc.jobclass_sid job_class_sid,
-                bu.bu_sid,
-                s.fte_reg,
-                s.fte_ovt,
-                s.fire_ovt,
-                s.emplid,
-                emp.empl_sid
-            from src_data s
-            -- joins on dim tables with historic records assume each pay_end_date in ps_tgb_fteburn_tbl 
-            -- spans 2 weeks and null effective dates in the dimension tables indicate the current record
+            ) s
+            -- joins on dim tables
             left join cdw.em_employee_d emp 
                 on emp.emplid = s.emplid
             left join cdw.or_business_unit_d bu 
@@ -124,10 +124,24 @@ BEGIN
                 on s.empl_status = es.empl_status
             left join cdw.or_location_d loc 
                 on s.location_bk = loc.setid_loc
-                and (
-                    loc.eff_dt > s.pay_end_dt - 14
-                    and (loc.eff_dt <= s.pay_end_dt or loc.curr_ind = 'Y')
+                -- and ((
+                --     loc.eff_dt > s.pay_end_dt - 14
+                --     and (loc.eff_dt <= s.pay_end_dt or loc.curr_ind = 'Y')
+                -- ) or (loc.record_num = 1 and loc.curr_ind = 'Y'))
+
+                -- effective date is in pay period
+                -- (loc.eff_dt > s.pay_end_dt - 14 and loc.eff_dt <= s.pay_end_dt)
+                -- effective date is before pay period and current
+                -- or (loc.eff_dt <= s.pay_end_dt and loc.curr_ind = 'Y')
+                -- the range [effective date start, end] covers the pay period
+
+                and loc.eff_dt = (
+                    select max(sub_loc.eff_dt)
+                    from cdw.or_location_d sub_loc
+                    where sub_loc.eff_dt <= s.pay_end_dt
+                        and sub_loc.setid_loc = s.location_bk
                 )
+
             where s.emplid is not null
                 and s.pay_end_dt_sk is not null
         ;
