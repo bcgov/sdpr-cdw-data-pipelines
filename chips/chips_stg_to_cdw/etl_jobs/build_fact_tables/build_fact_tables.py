@@ -38,6 +38,7 @@ def run_sql_script(db: OracleDB, sql_script_endpoint: str):
 
 def main():
     db = OracleDB(conn_str_key_endpoint = odb_conn_str_key_endpoint)
+    run_sql_script(db, r'em_eft_fte_f.sql')
     build_em_stiip_f()
     build_em_fte_burn_f()
 
