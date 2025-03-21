@@ -1,8 +1,27 @@
+alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'
+
 truncate table cdw.em_stiip_f;
 
 insert into cdw.em_stiip_f
-    with
-    src_data as (
+    select
+        apt.appt_status_sid appointment_status_sid,
+        s.leave_end_dt_sk,
+        s.leave_begin_dt_sk,
+        loc.location_sid,
+        s.pay_end_dt_sk,
+        es.empl_status_sid,
+        pos.position_sid,
+        bu.bu_sid,
+        emp.empl_sid,
+        s.emplid,
+        jc.jobclass_sid,
+        s.hourly_rt hourly_rate,
+        s.leave_hours,
+        s.leavecost leave_cost,
+        s.paidcost paid_cost,
+        s.empls empl_taking_leave,
+        pc.paycode_sid
+    from (
         SELECT
             a.emplid,
             a.pay_end_dt,
@@ -130,34 +149,47 @@ insert into cdw.em_stiip_f
                 when a.erncd = 'SIZ' then 0
                 when a.erncd IN ('ESL') then (a.oth_hrs * a.hourly_rt)
             end
-    )
-    select
-        apt.appt_status_sid appointment_status_sid,
-        s.leave_end_dt_sk,
-        s.leave_begin_dt_sk,
-        loc.location_sid,
-        s.pay_end_dt_sk,
-        es.empl_status_sid,
-        pos.position_sid,
-        bu.bu_sid,
-        emp.empl_sid,
-        s.emplid,
-        jc.jobclass_sid,
-        s.hourly_rt hourly_rate,
-        s.leave_hours,
-        s.leavecost leave_cost,
-        s.paidcost paid_cost,
-        s.empls empl_taking_leave,
-        pc.paycode_sid
-    from src_data s
-    left join cdw.em_appointment_status_d apt on s.appointment_status = apt.appointment_status
-    left join cdw.or_location_d loc on s.location_bk = loc.setid_loc
-    left join cdw.em_employee_status_d es on s.empl_status = es.empl_status
-    left join cdw.em_position_d pos on s.position_nbr = pos.position_nbr
-    left join cdw.or_business_unit_d bu on s.bu_bk = bu.bu_bk
-    left join cdw.em_employee_d emp on s.emplid = emp.emplid
-    left join cdw.em_job_class_d jc on s.jobcode_bk = jc.jobcode_bk
-    left join cdw.em_paycode_d pc on s.leavecode = pc.pay_cd
+    ) s
+    left join cdw.em_appointment_status_d apt 
+        on s.appointment_status = apt.appointment_status
+    left join cdw.or_location_d loc 
+        on s.location_bk = loc.setid_loc
+        and loc.eff_dt = (
+            select max(sub_loc.eff_dt)
+            from cdw.or_location_d sub_loc
+            where sub_loc.eff_dt <= s.pay_end_dt
+                and sub_loc.setid_loc = s.location_bk
+        )
+    left join cdw.em_employee_status_d es 
+        on s.empl_status = es.empl_status
+    left join cdw.em_position_d pos 
+        on s.position_nbr = pos.position_nbr
+        and pos.eff_date = (
+            select max(sub_pos.eff_date)
+            from cdw.em_position_d sub_pos
+            where sub_pos.eff_date <= s.pay_end_dt
+                and sub_pos.position_nbr = s.position_nbr
+        )
+    left join cdw.or_business_unit_d bu 
+        on s.bu_bk = bu.bu_bk
+        and bu.eff_date = (
+            select max(sub_bu.eff_date)
+            from cdw.or_business_unit_d sub_bu
+            where sub_bu.eff_date <= s.pay_end_dt
+                and sub_bu.bu_bk = s.bu_bk
+        )
+    left join cdw.em_employee_d emp 
+        on s.emplid = emp.emplid
+    left join cdw.em_job_class_d jc 
+        on s.jobcode_bk = jc.jobcode_bk
+        and to_date(jc.effdt) = (
+            select max(sub_jc.effdt)
+            from cdw.em_job_class_d sub_jc
+            where to_date(sub_jc.effdt) <= to_date(s.pay_end_dt)
+                and sub_jc.jobcode_bk = s.jobcode_bk
+        )
+    left join cdw.em_paycode_d pc 
+        on s.leavecode = pc.pay_cd
 ;
 
 drop index cdw.istiip_f_a01;

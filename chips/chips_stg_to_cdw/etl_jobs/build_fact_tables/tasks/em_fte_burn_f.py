@@ -58,7 +58,6 @@ def build_em_fte_burn_f():
 
 
     # Build em_fte_burn
-    db.execute("truncate table cdw.em_fte_burn_f")
     db.execute("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'")
     db.execute("truncate table cdw.em_fte_burn_f")
     db.execute(r"""
