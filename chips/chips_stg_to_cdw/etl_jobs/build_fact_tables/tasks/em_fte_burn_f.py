@@ -58,8 +58,9 @@ def build_em_fte_burn_f():
 
 
     # Build em_fte_burn
+    db.execute("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'")
     db.execute("truncate table cdw.em_fte_burn_f")
-    db.execute("""
+    db.execute(r"""
         declare
             type em_fte_burn_f_tab is table of cdw.em_fte_burn_f%rowtype index by binary_integer; 
             em_fte_burn_f_recs em_fte_burn_f_tab;
@@ -136,7 +137,7 @@ def build_em_fte_burn_f():
                     )
                 left join cdw.em_job_class_d jc 
                     on s.jobcode_bk = jc.jobcode_bk
-                    and jc.effdt = (
+                    and to_date(jc.effdt) = (
                         select max(sub_jc.effdt)
                         from cdw.em_job_class_d sub_jc
                         where to_date(sub_jc.effdt) <= to_date(s.pay_end_dt)
