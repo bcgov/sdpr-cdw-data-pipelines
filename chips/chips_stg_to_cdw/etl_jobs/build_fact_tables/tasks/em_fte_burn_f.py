@@ -1,5 +1,3 @@
-import polars as pl 
-import datetime as dt
 import logging
 import sys
 from dotenv import load_dotenv
