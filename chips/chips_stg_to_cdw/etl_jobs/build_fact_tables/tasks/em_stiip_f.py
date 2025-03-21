@@ -115,6 +115,7 @@ def build_em_stiip_f():
                                 and b.erncd in ('SIZ','SIX','SIH','SIP','SIS','S57', 'ESL')   --  'SIL'
                                 and a.company = 'GOV'
                                 and a.paygroup in ('STD','OBL','LBM')
+                            where a.pay_end_dt >= pay_end_dts.pay_end_dt
                             group by
                                 a.earns_begin_dt, 
                                 a.earns_end_dt, 
