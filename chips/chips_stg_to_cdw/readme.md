@@ -17,3 +17,4 @@ Tables in the CHIPS_STG schema form the basis for the 'EM', as in 'employee', se
     <!-- the directory containing tnsnames.ora -->
     TNSNAMES_CONFIG_DIR = "E:/tnsnames_dir"
     ```
+    You can find the tnsnames.ora file on the ETL servers for TNSNAMES_CONFIG_DIR and you can open Registry Editor on the servers, vaigate to the keys containing Oracle connection strings at `Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Datasources\SDSI\Databases\Oracle\`, export the ones you want, then import them into the Registry Editor on your local machine.
