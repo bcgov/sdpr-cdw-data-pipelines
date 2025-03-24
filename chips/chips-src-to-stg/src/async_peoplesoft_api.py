@@ -252,17 +252,6 @@ class AsyncPeopleSoftAPI:
         Returns:
             dict: The response data parsed as JSON.
         """
-        # response = await self.get(session, endpoint, params)
-        # attempt = 1
-        # while attempt <= 10:
-        #     try:
-        #         data = await response.json(content_type=None)
-        #         break
-        #     except aiohttp.client_exceptions.ClientPayloadError as e:
-        #         logger.info(f'(attempt {attempt}) raised {e} when trying to get json response from {endpoint} with params={params}')
-        #         attempt += 1
-        #         asyncio.sleep(1)
-
         response = await self.get(session, endpoint, params)
         data = await response.json(content_type=None)
         return data

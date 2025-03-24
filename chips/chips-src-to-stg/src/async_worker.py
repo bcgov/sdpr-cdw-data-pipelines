@@ -1,7 +1,6 @@
 import asyncio
 from collections import deque
 import tracemalloc
-import datetime
 
 tracemalloc.start()
 
