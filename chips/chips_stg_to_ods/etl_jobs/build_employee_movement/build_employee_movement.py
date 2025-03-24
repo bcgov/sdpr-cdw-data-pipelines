@@ -70,7 +70,7 @@ if __name__ == "__main__":
     try:
         main()
         logging.info('finished')
-        sys.exit(0)
     except Exception:
         logging.exception('Got exception on main handler')
         sys.exit(1)
+    sys.exit(0)
