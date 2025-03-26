@@ -8,7 +8,7 @@ base_dir = os.getenv('MAIN_BASE_DIR')
 odb_conn_str_key_endpoint = os.getenv('ORACLE_CONN_STRING_KEY')
 sys.path.append(base_dir)
 from utils.oracle_db import OracleDB
-from tasks.stiip_security_requirement.sdpr_employee_email import build_sdpr_employee_email
+from tasks.sdpr_employee_email import build_sdpr_employee_email
 
 this_dir = os.path.dirname(os.path.realpath(__file__))
 this_file = Path(__file__).stem
@@ -36,7 +36,7 @@ def run_sql_script(db: OracleDB, sql_script_endpoint: str):
     logger.info(f'finished executing: {sql_script_endpoint}')
 
 def main():
-    db = OracleDB(conn_str_key_endpoint = odb_conn_str_key_endpoint)
+    # db = OracleDB(conn_str_key_endpoint = odb_conn_str_key_endpoint)
     
     build_sdpr_employee_email() 
 
