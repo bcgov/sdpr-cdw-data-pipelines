@@ -35,6 +35,8 @@ def build_sdpr_employee_email():
         ignore_all_db_errors=False
     )
 
+    db.execute("commit")
+
     db.execute_with_exception_handling(
         """
         begin
@@ -60,6 +62,7 @@ def build_sdpr_employee_email():
                         and current_flg = 'Y'
                 ;
             end loop;
+            commit;
         end;
         """,
         ignore_all_db_errors=False
