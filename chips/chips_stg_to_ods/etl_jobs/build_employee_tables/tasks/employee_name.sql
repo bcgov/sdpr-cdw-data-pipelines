@@ -4,16 +4,21 @@ commit;
 
 create table ods.employee_name as
     with 
+    filter_pay_check as (
+        select * 
+        from chips_stg.ps_pay_check 
+        where off_cycle = 'N'
+    ),
     names as (
         select distinct emplid, name
-        from chips_stg.ps_pay_check 
+        from filter_pay_check 
     ),
     name_periods as (
         select *
         from names n
         left join (
             select p.emplid, p.name, min(p.pay_end_dt) first_pay_end_date, max(p.pay_end_dt) last_pay_end_date
-            from chips_stg.ps_pay_check p
+            from filter_pay_check p
             group by emplid, name
         ) using (emplid, name)
     ),
