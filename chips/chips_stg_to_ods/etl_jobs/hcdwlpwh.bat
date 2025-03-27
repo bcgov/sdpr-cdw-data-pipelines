@@ -34,6 +34,25 @@ echo successfully built employee movement >>%BATCH_LOG_FILE%
 set RET=0
 echo. >> %BATCH_LOG_FILE%
 
+echo building employee email, idir, and name tables >>%BATCH_LOG_FILE%  
+call E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_ods\etl_jobs\build_employee_tables\build_employee_tables.bat
+set RET=%ERRORLEVEL%
+echo python returned code %RET% >>%BATCH_LOG_FILE%
+rem Only return code of 0 is acceptable.
+for %%i in ("%~dp0..\..\") do set "chips_root_dir=%%~fi" 
+echo python log dir is set to: %chips_root_dir%chips_stg_to_ods\etl_jobs\build_employee_tables\build_employee_tables.log >>%BATCH_LOG_FILE% 
+if %RET% NEQ 0 (
+    echo failed to build employee email, idir, and name tables in python >>%BATCH_LOG_FILE%
+    echo ----- start python log ----- >>%BATCH_LOG_FILE% 
+	type %chips_root_dir%chips_stg_to_ods\etl_jobs\build_employee_tables\build_employee_tables.log >>%BATCH_LOG_FILE% 
+	echo ------ end python log ------ >>%BATCH_LOG_FILE% 
+    set RET=16
+    GOTO FAILED
+)
+echo successfully built employee email, idir, and name tables >>%BATCH_LOG_FILE%
+set RET=0
+echo. >> %BATCH_LOG_FILE%
+
 CALL %ETL_BIN%\data_handshake.bat COMPLETE "CHIPS Data"
 :EXIT
 set EXIT_CODE=%RET%
