@@ -10,6 +10,7 @@ sys.path.append(base_dir)
 from utils.oracle_db import OracleDB
 from tasks.sdpr_employee_email import build_sdpr_employee_email
 from tasks.sdpr_employee_idir import build_sdpr_employee_idir
+from tasks.run_chips_org_stream import run_chips_org_stream
 
 this_dir = os.path.dirname(os.path.realpath(__file__))
 this_file = Path(__file__).stem
@@ -41,6 +42,9 @@ def main():
     
     build_sdpr_employee_email() 
     build_sdpr_employee_idir() 
+    # add build_employee_name to replace the stale em_employee_name_scd table here
+
+    run_chips_org_stream()
 
 if __name__ == "__main__":
     try:
