@@ -38,11 +38,11 @@ def run_sql_script(db: OracleDB, sql_script_endpoint: str):
     logger.info(f'finished executing: {sql_script_endpoint}')
 
 def main():
-    # db = OracleDB(conn_str_key_endpoint = odb_conn_str_key_endpoint)
+    db = OracleDB(conn_str_key_endpoint = odb_conn_str_key_endpoint)
     
     build_sdpr_employee_email() 
     build_sdpr_employee_idir() 
-    # add build_employee_name to replace the stale em_employee_name_scd table here
+    run_sql_script(db, r'employee_name.sql')
 
     run_chips_org_stream()
 

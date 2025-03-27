@@ -17,6 +17,7 @@ def build_sdpr_employee_idir():
 
     db.execute("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'")
 
+    # Insert records for new combinations of employee ID and IDIR
     db.execute_with_exception_handling(
         """
         merge into ods.sdpr_employee_idir d
@@ -37,6 +38,39 @@ def build_sdpr_employee_idir():
 
     db.execute("commit")
 
+    # For all IDIRs, update current_flg from 'Y' to 'N' on all but the most recent record 
+    db.execute_with_exception_handling(
+        """
+        begin
+            for sdpr_employee_idir_tab in (
+                with update_emplids as (
+                    select idir, current_flg, count(*)
+                    from ods.sdpr_employee_idir
+                    where current_flg = 'Y'
+                    group by idir, current_flg
+                    having count(*) > 1
+                )
+                select idir from update_emplids
+            ) loop
+                dbms_output.put_line(sdpr_employee_idir_tab.idir);
+                update ods.sdpr_employee_idir
+                    set current_flg = 'N'
+                    where idir = sdpr_employee_idir_tab.idir
+                        and created_at < (
+                            select max(created_at)
+                            from ods.sdpr_employee_idir
+                            where idir = sdpr_employee_idir_tab.idir
+                        )
+                        and current_flg = 'Y'
+                ;
+            end loop;
+            commit;
+        end;
+        """,
+        ignore_all_db_errors=False
+    )
+
+    # For all employee IDs, update current_flg from 'Y' to 'N' on all but the most recent record
     db.execute_with_exception_handling(
         """
         begin

@@ -17,6 +17,7 @@ def build_sdpr_employee_email():
 
     db.execute("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'")
 
+    # Insert records for new combinations of employee ID and email
     db.execute_with_exception_handling(
         """
         merge into ods.sdpr_employee_email d
@@ -37,6 +38,39 @@ def build_sdpr_employee_email():
 
     db.execute("commit")
 
+    # For all emails, update current_flg from 'Y' to 'N' on all but the most recent record 
+    db.execute_with_exception_handling(
+        """
+        begin
+            for sdpr_employee_email_tab in (
+                with update_emails as (
+                    select email, count(*)
+                    from ods.sdpr_employee_email
+                    where current_flg = 'Y'
+                    group by email
+                    having count(*) > 1
+                )
+                select email from update_emails
+            ) loop
+                dbms_output.put_line(sdpr_employee_email_tab.email);
+                update ods.sdpr_employee_email
+                    set current_flg = 'N'
+                    where email = sdpr_employee_email_tab.email
+                        and created_at < (
+                            select max(created_at)
+                            from ods.sdpr_employee_email
+                            where email = sdpr_employee_email_tab.email
+                        )
+                        and current_flg = 'Y'
+                ;
+            end loop;
+            commit;
+        end;
+        """,
+        ignore_all_db_errors=False
+    )
+
+    # For all employee IDs, update current_flg from 'Y' to 'N' on all but the most recent record
     db.execute_with_exception_handling(
         """
         begin
