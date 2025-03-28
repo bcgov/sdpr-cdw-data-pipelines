@@ -13,7 +13,6 @@ set JOB_NAME=%~n0
 set JOB_DESCRIPTION=CHIPS SRC to CDW ETL Job
 set OBJ_TYPE=ETL
 set APP_SYS=CHIPS
-set DS_PROJECT=HR
 
 call %ETL_BIN%\EnvironmentStart.bat
 @if %RET% NEQ 0 GOTO EXIT
