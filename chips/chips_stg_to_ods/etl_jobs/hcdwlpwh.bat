@@ -53,10 +53,27 @@ echo successfully built employee email, idir, and name tables >>%BATCH_LOG_FILE%
 set RET=0
 echo. >> %BATCH_LOG_FILE%
 
+goto FINISH
+
+:FAILED
+set RET=16
+echo. >> %BATCH_LOG_FILE%
+echo %JOB_NAME% failed. RETURN CODE=%RET%  >> %BATCH_LOG_FILE%
+
+:FINISH
+echo. >> %BATCH_LOG_FILE%
+echo ************************************************************* >> %BATCH_LOG_FILE%
+echo *****  Finishing CHIPS ETL                        >> %BATCH_LOG_FILE%
+echo RETURN CODE  RET=%RET%                            >> %BATCH_LOG_FILE%
+echo End Date= %DATE%                                  >> %BATCH_LOG_FILE%
+echo End Time= %TIME%                                  >> %BATCH_LOG_FILE%
+echo ************************************************************* >> %BATCH_LOG_FILE%
+echo. >> %BATCH_LOG_FILE%
+
 CALL %ETL_BIN%\data_handshake.bat COMPLETE "CHIPS Data"
+
 :EXIT
 set EXIT_CODE=%RET%
-
 CALL %ETL_BIN%\EnvironmentEnd.bat
 POPD & ENDLOCAL & SET EXIT_CODE=%EXIT_CODE%  & SET AGENT_EXE=%AGENT_EXE%
 rem Send Return code back to ESP.

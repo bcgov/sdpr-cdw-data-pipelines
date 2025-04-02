@@ -40,6 +40,8 @@ echo Start Date= %DATE%                                >> %SCRIPT_LOG%
 echo Start Time= %TIME%                                >> %SCRIPT_LOG%
 echo ************************************************* >> %SCRIPT_LOG%
 
+for %%i in ("%~dp0..\..\") do set "chips_root_dir=%%~fi" 
+
 echo starting at step: %step_num% >> %SCRIPT_LOG%  
 echo. >> %SCRIPT_LOG%
 
@@ -50,12 +52,11 @@ rem STEP010 - Run CHIPS API to CHIPS_STG (Oracle) ETL Pipeline
 rem *************************************************************
 :STEP010 
 echo building chips_stg tables >>%SCRIPT_LOG%  
+echo python log dir is set to: %chips_root_dir%chips_stg_to_cdw\etl_jobs\chips_src_to_stg\chips_src_to_stg.log >>%BATCH_LOG_FILE% 
 call E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips-src-to-stg\etl_jobs\chips_src_to_stg\chips_src_to_stg.bat
 set RET=%ERRORLEVEL%
 echo python returned code %RET% >>%BATCH_LOG_FILE%
 rem Only return code of 0 is acceptable.
-for %%i in ("%~dp0..\..\") do set "chips_root_dir=%%~fi" 
-@REM echo chips_root_dir: %chips_root_dir% >>%BATCH_LOG_FILE% 
 if %RET% NEQ 0 (
     echo failed to build chips_stg tables in python >>%BATCH_LOG_FILE%
     echo ----- start python log ----- >>%BATCH_LOG_FILE% 
@@ -73,6 +74,7 @@ rem STEP020 - build chips_stg.px_tree_flattened
 rem *************************************************************
 :STEP020 
 echo building px_tree_flattened >>%SCRIPT_LOG%  
+echo python log dir is set to: %chips_root_dir%chips_stg_to_cdw\etl_jobs\build_px_tree_flattened\build_px_tree_flattened.log >>%BATCH_LOG_FILE% 
 call E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_cdw\etl_jobs\build_px_tree_flattened\build_px_tree_flattened.bat
 set RET=%ERRORLEVEL%
 echo python returned code %RET% >>%BATCH_LOG_FILE%
@@ -94,6 +96,7 @@ rem STEP030 - Load Dimension Tables
 rem *************************************************************
 :STEP030 
 echo building dimension tables >>%BATCH_LOG_FILE%
+echo python log dir is set to: %chips_root_dir%chips_stg_to_cdw\etl_jobs\build_dim_tables\build_dim_tables.log >>%BATCH_LOG_FILE% 
 call E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_cdw\etl_jobs\build_dim_tables\build_dim_tables.bat
 set RET=%ERRORLEVEL%
 echo python returned code %RET% >>%BATCH_LOG_FILE%
@@ -115,6 +118,7 @@ rem STEP040 - Load Fact Tables
 rem *************************************************************
 :STEP040  
 echo building fact tables >>%BATCH_LOG_FILE%
+echo python log dir is set to: %chips_root_dir%chips_stg_to_cdw\etl_jobs\build_fact_tables\build_fact_tables.log >>%BATCH_LOG_FILE% 
 call E:\ETL_V8\sdpr-cdw-data-pipelines\chips\chips_stg_to_cdw\etl_jobs\build_fact_tables\build_fact_tables.bat
 set RET=%ERRORLEVEL%
 echo python returned code %RET% >>%BATCH_LOG_FILE%
