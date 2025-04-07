@@ -54,86 +54,12 @@ Open bash terminal
 5. The documentation website is located at: `docs\build\html\index.html`. Just paste the full file path in your browser.
 
 ## Running the HCDWLPWA Job
-The HCDWLPWA job retrieves HR data from the MHRGRP API, loads it into the CHIPS_STG staging area in Oracle, and then builds analytical tables in the CDW schema from the staging tables. 
-
-### `HCDWLPWA.bat`
-Run this batch script to refresh CHIPS_STG tables and some CDW and ODS tables that are built using CHIPS_STG tables.
-
-The HCDWLPWA job is run according to the HCDWLPWA.bat file located on the ETL Servers at E:\ETL_V8\prod\chips\shellscript\HCDWLPWA.bat.
-
-The HCDWLPWA.bat file runs the CHIPS_ETL_STEPS.bat file, which is in the same folder, to do the ETL work.
-
-### `CHIPS_ETL_STEPS.bat`
-The first step in CHIPS_ETL_STEPS.bat gets data from the MHRGRP API and loads it into CHIPS_STG in the Oracle CDW. The only transformations that occur at this step are (should be) data type transformations required to load the JSON values retrieved from the API into the corresponding Oracle CDW columns. The following code in CHIPS_ETL_STEPS.bat activates the python virtual environment and runs the python code in E:\ETL_V8\Python\peoplesoft-etl-pipeline\HCDWLPWA.py:
-
-
-```
-@REM activate virtual environment
-call E:\ETL_V8\Python\peoplesoft-etl-pipeline\.venv\Scripts\activate.bat
-@REM run python job script
-python "E:\ETL_V8\Python\peoplesoft-etl-pipeline\etl_jobs\peoplesoft_src_to_stg\peoplesoft_src_to_stg.py"
-```
-
-### `peoplesoft_src_to_stg.py`
-This script can be run to build the staging tables in CHIPS_STG. These are the tables that the analytical tables in the CDW are built upon; this script does not build the analytical tables. 
-
-When this script is run, it first calls the build_tables function to build the tables:
-
-
-```
-build_tables(
-    endpoint_table_pairs = endpoint_table_pairs,
-    n_task_workers = 10,
-    start_task_sleep_time = 2,
-)
-```
-The argument n_task_workers is used to set the number of tasks that can be run concurrently using a queue worker. The argument start_task_sleep_time is used to set the minimum number of seconds between tasks starts. If too many tasks start to close together, then the API will receive more requests than it can handle for a time period and return HTTP 429 errors.
-
-If you examine the build_tables function (where it is defined, as in, def build_tables), you will see this list of endpoint-table name pairs for each table that is to be built:
-
-
-```
-# API endpoint-Oracle table pairs
-endpoint_table_pairs = [
-    # Rebuild entire table
-    ("ps_earnings_tbl", "PS_EARNINGS_TBL"),
-    ("ps_empl_ctg_l1", "PS_EMPL_CTG_L1"),
-    ("ps_pay_calendar", "PS_PAY_CALENDAR"),
-    ("ps_pay_oth_earns_pay_dates", "PS_PAY_OTH_EARNS_PAY_DATES"),
-    ("ps_sal_plan_tbl", "PS_SAL_PLAN_TBL"),
-    ("ps_union_tbl", "PS_UNION_TBL"),
-    ("ps_setid_tbl", "PS_SETID_TBL"),
-    ("ps_tgb_city_tbl", "PS_TGB_CITY_TBL"),
-    ("ps_tgb_cnocsub_tbl", "PS_TGB_CNOCSUB_TBL"),
-    ("ps_sal_grade_tbl", "PS_SAL_GRADE_TBL"),
-    ("ps_bus_unit_tbl_hr", "PS_BUS_UNIT_TBL_HR"),
-    ("ps_action_tbl", "PS_ACTION_TBL"),
-    ("ps_actn_reason_tbl", "PS_ACTN_REASON_TBL"),
-    ("ps_can_noc_tbl", "PS_CAN_NOC_TBL"),
-    ("ps_company_tbl", "PS_COMPANY_TBL"),
-    ("ps_deduction_class", "PS_DEDUCTION_CLASS"),
-    ("ps_deduction_tbl", "PS_DEDUCTION_TBL"),
-    ("ps_jobcode_tbl", "PS_JOBCODE_TBL"),
-    ("ps_location_tbl", "PS_LOCATION_TBL"),
-    ("ps_sal_step_tbl", "PS_SAL_STEP_TBL"),
-    ("treedefn", "TREEDEFN"),
-    ("pstreelevel", "PSTREELEVEL"),
-    ("psxlatitem", "PSXLATITEM"),
-    ("ps_dept_tbl", "PS_DEPT_TBL"),
-    ("psoprdefn_bc", "PS_OPRDEFN_BC_TBL"),
-    ("ps_employees", "PS_EMPLOYEES"),
-    ("ps_employment", "PS_EMPLOYMENT"),
-    ("ps_personal_data", "PS_PERSONAL_DATA"),
-    ("ps_set_cntrl_rec", "PS_SET_CNTRL_REC"),
-    ("ps_position_data", "PS_POSITION_DATA"),
-    ("pstreenode", "PSTREENODE"),
-    ("ps_job", "PS_JOB"),
-
-    # Upsert recently created records for large tables
-    ("ps_tgb_fteburn_tbl_by_date", "PS_TGB_FTEBURN_TBL"),
-    ("ps_pay_check_by_date", "PS_PAY_CHECK"),
-    ("ps_pay_oth_earns_by_date", "PS_PAY_OTH_EARNS"),
-    ("ps_pay_earnings_by_date", "PS_PAY_EARNINGS"),
-]
-```
-The function iterates through each pair to build/update the staging tables in CHIPS_STG using the function, etl_engine.run_etl_worker (Remember, you can drill into functions using ctrl+click in a good code editor, like VS Code.) Comment out lines for tables that you don’t want to build/re-build, if you like. etl_engine.run_etl_worker runs a worker that allows multiple ETL tasks to be run concurrently according to the helper function async_etl_task. async_etl_task gets the data from the API endpoint, applies data type transformations, and loads the data into the corresponding CDW Oracle table in CHIPS_STG.
+Here’s an exercise you can do familiarize yourself with running this ETL pipeline:
+1.	In Oracle, open the view ETL.TABLE_BUILD_STATUS_VIEW and take a look at the build_end column to see the last time chips_stg tables have been refreshed.
+2.	go onto the dev server, amleth.
+3.	In VS Code, open this repo at: E:\ETL_V8\sdpr-cdw-data-pipelines
+4.	Open `...\chips\chips-src-to-stg\etl_jobs\chips_src_to_stg\chips_src_to_stg.py`
+5.	Comment out some endpoint table pairs (using #) by highlighting lines of code then using Ctrl + / and then saving the file.
+6.	Run `...\chips\chips-src-to-stg\etl_jobs\chips_src_to_stg\chips_src_to_stg.bat` to refresh the tables that haven’t been commented out
+7.	In Oracle, refresh your view of ETL.TABLE_BUILD_STATUS_VIEW to see real time status updates of the tables being built
+8.	Remember to go back to chips_src_to_stg.py and uncomment the endpoint table pairs that you previously commented out in (5.).
