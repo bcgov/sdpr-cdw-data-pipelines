@@ -1,2 +1,2 @@
 # Refresh
-Refreshes DB environments.
+Refresh DB environments using Datapump imports.
